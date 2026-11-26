@@ -8,7 +8,9 @@ export const queueRepo = {
   async join({ userId, gender, age, wantGender = 'any', premium = 0 }) {
     await run(
       `INSERT INTO queue (user_id, gender, age, want_gender, premium, created_at)
-       VALUES (:userId, :gender, :age, :wantGender, :premium, :ts)
+       -- created_at qat'iy o'sadi: bir millisekundda kelganlarda ham FIFO tartibi aniq.
+       VALUES (:userId, :gender, :age, :wantGender, :premium,
+               MAX(:ts, COALESCE((SELECT MAX(created_at) FROM queue), 0) + 1))
        ON CONFLICT(user_id) DO UPDATE SET
          gender = excluded.gender, age = excluded.age, want_gender = excluded.want_gender,
          premium = excluded.premium, created_at = excluded.created_at`,
