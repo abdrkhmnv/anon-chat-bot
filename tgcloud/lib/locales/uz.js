@@ -9,8 +9,8 @@ export default {
 
   // tugmalar (reply keyboard)
   'btn.search': '🔎 Suhbatdosh qidirish',
-  'btn.search_f': '👩 Qiz qidirish',
-  'btn.search_m': '👨 Yigit qidirish',
+  'btn.search_f': '👩 Qiz bola qidirish',
+  'btn.search_m': '👨 O\'g\'il bola qidirish',
   'btn.premium': '⭐ Premium',
   'btn.profile': '👤 Profil',
   'btn.help': 'ℹ️ Yordam',
