@@ -4,7 +4,8 @@
 
 import { config } from '../config.js';
 import { usersRepo } from '../repo/users.js';
-import { menuFor, inline, btn } from '../core/keyboards.js';
+import { menuFor, inline, btn, plainBtn } from '../core/keyboards.js';
+import { regionRows } from '../core/regions.js';
 
 export const genderKeyboard = (ctx, prefix = 'reg:g') => inline([[
   btn('👨 ' + ctx.t('gender.m'), `${prefix}:m`),
@@ -76,7 +77,12 @@ export default {
         ctx.user.age = age;
         ctx.user.step = null;
         await bot.emit('user:registered', { user: ctx.user });
-        return ctx.reply(ctx.t('reg.done'), { reply_markup: menuFor(ctx.user) });
+        await ctx.reply(ctx.t('reg.done'), { reply_markup: menuFor(ctx.user) });
+        // Viloyat — ixtiyoriy (VIP viloyat bo'yicha qidira oladi). Tanlov /settings dagi kabi saqlanadi.
+        return ctx.reply(ctx.t('reg.ask_region'), { reply_markup: inline([
+          ...regionRows(ctx, 'set:region', plainBtn),
+          [plainBtn(ctx.t('reg.btn_skip'), 'set:region:skip')],
+        ]) });
       }
 
       if (ctx.type === 'callback_query') await ctx.answer();

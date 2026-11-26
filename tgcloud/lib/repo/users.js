@@ -7,6 +7,8 @@ const COLUMNS = {
   firstName: 'first_name', username: 'username', lang: 'lang', gender: 'gender',
   age: 'age', step: 'step', state: 'state', lastWant: 'last_want', partnerId: 'partner_id', chatId: 'chat_id',
   premiumUntil: 'premium_until', banned: 'banned', reports: 'reports',
+  region: 'region', wantRegion: 'want_region', ageMin: 'age_min', ageMax: 'age_max',
+  referredBy: 'referred_by',
 };
 
 const TOUCH_EVERY_SEC = 300; // last_seen_at ni har xabarda emas, 5 daqiqada bir yangilaymiz
@@ -108,6 +110,29 @@ export const usersRepo = {
       { id },
     );
     return res.rows?.[0]?.reports ?? 0;
+  },
+
+  /** Baho: 👍 yoki 👎 qo'shadi. */
+  async addRating(id, value) {
+    const col = value > 0 ? 'likes' : 'dislikes';
+    await run(`UPDATE users SET ${col} = ${col} + 1 WHERE id = :id`, { id });
+  },
+
+  /** Referal: taklif qilgan odamning hisobini oshiradi → yangi son. */
+  async addReferral(id) {
+    const res = await run(
+      'UPDATE users SET referrals = referrals + 1 WHERE id = :id RETURNING referrals',
+      { id },
+    );
+    return res.rows?.[0]?.referrals ?? 0;
+  },
+
+  /** Hozir faol (qidirayotgan yoki suhbatdagi) foydalanuvchilar soni. */
+  async onlineCount() {
+    const row = await get(
+      "SELECT count(*) AS n FROM users WHERE state IN ('searching', 'chatting')",
+    );
+    return row?.n ?? 0;
   },
 
   async stats() {

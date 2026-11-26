@@ -48,10 +48,13 @@ test("ro'yxatdan o'tish: jins, yosh, yosh chegarasi", async () => {
   await send(1, '15');
   assert.match(lastTo(1), /18 dan 99 gacha/);
   await send(1, '21');
-  assert.match(lastTo(1), /Tayyor/);
+  assert.match(textsTo(1).at(-2), /Tayyor/);
+  assert.match(lastTo(1), /Qaysi viloyatdansiz/);   // viloyat — ixtiyoriy
   const u = user(1);
   assert.equal(u.gender, 'f');
   assert.equal(u.age, 21);
+  await press(1, 'set:region:sam');
+  assert.equal(user(1).region, 'sam');
 });
 
 test('ikki oddiy foydalanuvchi ulanadi; jins/yosh ko\'rinmaydi; xabar anonim uzatiladi', async () => {
@@ -212,7 +215,9 @@ test('/settings: bitta o\'zgartirishdan keyin yopiladi; Orqaga ishlaydi; tugmala
   assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
   const kb = calls.at(-1).params.reply_markup.inline_keyboard;
   assert.deepEqual(kb.map((r) => r.map((b) => [b.text, b.callback_data, b.style])),
-    [[['👨 Jinsimni 👩', 'set:gender', undefined]], [['📅 Yoshimni', 'set:age', undefined]], [['⬅️ Orqaga', 'set:close', undefined]]]);
+    [[['👨 Jinsimni 👩', 'set:gender', undefined]], [['📅 Yoshimni', 'set:age', undefined]],
+      [['📍 Viloyatimni', 'set:region', undefined]], [['🌐 Til / Язык', 'set:lang', undefined]],
+      [['⬅️ Orqaga', 'set:close', undefined]]]);
   assert.ok(kb.flat().every((b) => !b.icon_custom_emoji_id)); // oddiy emojilar
 
   // Jins: o'sha xabar tahrirlanadi, tanlangach "saqlandi" va tugmalarsiz yopiladi.
@@ -345,7 +350,7 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
 
   const all = calls.flatMap(buttonsOf).concat(calls.filter((c) => c.method === 'editMessageText').flatMap(buttonsOf));
   const withEmoji = all.filter((b) => !(b.text.startsWith('Spam') || ['Haqorat', '18+ kontent', 'Boshqa'].includes(b.text))
-    && !String(b.callback_data).startsWith('set:')); // /settings — oddiy emojilar
+    && !String(b.callback_data).startsWith('set:')); // /settings va viloyatlar — oddiy emojilar
   assert.ok(withEmoji.length >= 15, `tugmalar soni: ${withEmoji.length}`);
   for (const b of withEmoji) {
     assert.ok(ids.has(b.icon_custom_emoji_id), `ikonka yo'q: ${JSON.stringify(b)}`);
@@ -409,5 +414,208 @@ test('rangli tugmalar: menyu va inline tugmalarda style, o\'chirsa yo\'qoladi', 
     assert.equal(menuFor({ lang: 'uz' }, 'chatting').keyboard[0][1].style, undefined);
   } finally {
     config.coloredButtons = true;
+  }
+});
+
+// ------------------------------------------------------------------ v2
+
+const chatPair = async (a, b) => { await send(a, '/search'); await send(b, '/search'); };
+const copies = () => calls.filter((c) => c.method === 'copyMessage').length;
+
+test('spam himoyasi: havola, @username, telefon, kontakt to\'siladi; oddiy matn o\'tadi', async () => {
+  await register(1, 'm', 25);
+  await register(2, 'f', 22);
+  await chatPair(1, 2);
+  const before = copies();
+  for (const text of ['salom', '21 yoshdaman', 'soat 19:30 da', '2+2=4']) await send(1, text);
+  assert.equal(copies() - before, 4);
+
+  const bad = ['t.me/kanalim ga kiring', 'https://example.com', 'instagram.com/abc', 'yoz @username_1',
+    '+998 90 123 45 67', '90-123-45-67 ga qo\'ng\'iroq qil', 'www.sayt.uz'];
+  for (const text of bad) {
+    const n = copies();
+    await send(1, text);
+    assert.equal(copies(), n, text);
+    assert.match(lastTo(1), /yuborib bo'lmaydi/, text);
+  }
+  const n = copies();
+  await send(1, '', { contact: { phone_number: '998901234567', first_name: 'A' } });
+  await send(1, 'qara', { entities: [{ type: 'url', offset: 0, length: 4 }] });
+  assert.equal(copies(), n);
+});
+
+test('VIP filtri: viloyat va yosh; ikki tomonlama; oddiy foydalanuvchida ishlamaydi', async () => {
+  await register(1, 'm', 25);
+  await send(1, '/filter');
+  assert.ok(textsTo(1).some((t) => /Viloyat va yosh oralig'i bo'yicha qidirish faqat <b>VIP<\/b>/.test(t))); // oddiy — taklif
+  assert.match(lastTo(1), /💎 <b>VIP<\/b>/);
+  makePremium(1);
+  await send(1, '/filter');
+  assert.match(lastTo(1), /Qidiruv filtri/);
+  await press(1, 'flt:region:sam');
+  await press(1, 'flt:age:18-22');
+  assert.deepEqual([user(1).want_region, user(1).age_min, user(1).age_max], ['sam', 18, 22]);
+
+  await register(2, 'f', 21); await press(2, 'set:region:tsh');   // viloyat mos emas
+  await register(3, 'f', 30); await press(3, 'set:region:sam');   // yosh mos emas
+  await register(4, 'f', 20); await press(4, 'set:region:sam');   // mos
+  await send(1, '/search');
+  await send(2, '/search');
+  await send(3, '/search');
+  assert.equal(user(1).state, 'searching');
+  assert.equal(user(3).partner_id, 2);   // 2 va 3 bir-biri bilan ulandi (filtrsiz)
+  await send(4, '/search');
+  assert.equal(user(4).partner_id, 1);
+
+  // VIP tugasa — filtr e'tiborga olinmaydi.
+  raw().prepare('UPDATE users SET premium_until = 0 WHERE id = 1').run();
+  await send(1, '/stop');
+  await register(5, 'f', 40); await press(5, 'set:region:tsh');
+  await send(5, '/search');
+  await send(1, '/search');
+  assert.equal(user(1).partner_id, 5);
+
+  await press(1, 'flt:reset');            // VIP emas — tozalashga ruxsat yo'q
+  makePremium(1);
+  await press(1, 'flt:reset');
+  assert.deepEqual([user(1).want_region, user(1).age_min], [null, null]);
+});
+
+test('navbat: VIP oldinga o\'tadi, yomon baholi orqaga suriladi', async () => {
+  // VIP: 1 (oddiy qiz) avval keldi, 2 (VIP qiz, faqat yigit qidiradi) keyin — bir-biriga mos emas.
+  await register(1, 'f', 25);
+  await register(2, 'f', 26); makePremium(2);
+  await send(1, '/search');
+  await send(2, '/boy');
+  assert.equal(user(2).state, 'searching');
+  await register(3, 'm', 30);
+  await send(3, '/search');                 // ikkalasi ham mos — VIP ustun
+  assert.equal(user(3).partner_id, 2);
+
+  await send(1, '/stop');                  // navbatni bo'shatamiz
+  // Jarima: navbat darajasida — avval kelgan yomon baholi (10) keyin kelgan (11) dan orqada.
+  const { queueRepo } = await import('../tgcloud/lib/repo/queue.js');
+  await queueRepo.join({ userId: 10, gender: 'f', age: 20, penalty: 1 });
+  await queueRepo.join({ userId: 11, gender: 'f', age: 21 });
+  await queueRepo.join({ userId: 12, gender: 'm', age: 22 });
+  const p = await queueRepo.claimPartner(12, { boostMs: 30000, penaltyMs: 30000 });
+  assert.equal(p.user_id, 11);
+  // Jarimasiz — oddiy FIFO.
+  await queueRepo.join({ userId: 13, gender: 'm', age: 22 });
+  assert.equal((await queueRepo.claimPartner(13)).user_id, 10);
+});
+
+test('baho: suhbatdan keyin 👍/👎, bir marta, hisob yuritiladi', async () => {
+  await register(1, 'm', 25);
+  await register(2, 'f', 22);
+  await chatPair(1, 2);
+  await send(1, '/stop');
+  const chatId = raw().prepare('SELECT max(id) AS id FROM chats').get().id;
+  const kb = calls.filter((c) => c.params?.chat_id === 2 && c.params?.reply_markup?.inline_keyboard).at(-1)
+    .params.reply_markup.inline_keyboard.flat();
+  assert.deepEqual(kb.map((b) => b.callback_data), [`rate:${chatId}:1`, `rate:${chatId}:-1`, `rep:${chatId}`]);
+
+  await press(2, `rate:${chatId}:-1`);
+  await press(2, `rate:${chatId}:1`);       // takroriy — hisoblanmaydi
+  await press(1, `rate:${chatId}:1`);
+  assert.deepEqual([user(1).dislikes, user(1).likes, user(2).likes], [1, 0, 1]);
+  assert.ok(calls.some((c) => c.method === 'editMessageReplyMarkup'));
+  await press(3, `rate:${chatId}:1`);       // suhbat ishtirokchisi emas
+  assert.equal(user(1).likes, 0);
+});
+
+test('onlayn soni qidiruv xabarida ko\'rinadi', async () => {
+  await register(1, 'm', 25);
+  await register(2, 'f', 22);
+  await register(3, 'm', 30);
+  await chatPair(1, 2);
+  await send(3, '/search');
+  assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
+  await send(3, 'nimadir');               // qidiruv vaqtida boshqa xabar
+  assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
+  assert.doesNotMatch(lastTo(3), /\{online\}/);
+});
+
+test('jimlik: inactivityMin daqiqa yozilmasa suhbat yopiladi', async () => {
+  await register(1, 'm', 25);
+  await register(2, 'f', 22);
+  await chatPair(1, 2);
+  await send(1, 'salom');
+  const chatId = user(1).chat_id;
+  assert.ok(raw().prepare('SELECT last_msg_at FROM chats WHERE id = ?').get(chatId).last_msg_at > 0);
+  assert.equal(await bot.services.match.sweepIdle({ force: true }), 0);   // hali faol
+
+  raw().prepare('UPDATE chats SET last_msg_at = unixepoch() - ? WHERE id = ?').run(config.inactivityMin * 60 + 5, chatId);
+  assert.equal(await bot.services.match.sweepIdle({ force: true }), 1);
+  assert.equal(user(1).state, 'idle');
+  assert.equal(user(2).state, 'idle');
+  assert.ok(textsTo(1).some((t) => /daqiqa hech kim yozmagani/.test(t)));
+  assert.ok(textsTo(2).some((t) => /daqiqa hech kim yozmagani/.test(t)));
+});
+
+test('referal: 3 do\'st ro\'yxatdan o\'tsa 3 kun VIP; o\'zini taklif qilib bo\'lmaydi', async () => {
+  config.botUsername = 'testbot';
+  try {
+    await register(1, 'm', 25);
+    await send(1, '/invite');
+    assert.match(lastTo(1), /https:\/\/t\.me\/testbot\?start=ref_1/);
+    await send(1, '/start ref_1');                        // o'zini — hisoblanmaydi
+    for (const id of [2, 3]) {
+      await send(id, '/start ref_1');
+      await press(id, 'reg:g:f');
+      await send(id, '22');
+    }
+    assert.equal(user(1).referrals, 2);
+    assert.match(lastTo(1), /yana 1 ta do'st qoldi/);
+    assert.equal(user(1).premium_until, 0);
+    await register(9, 'f', 23);                           // havolasiz — hisoblanmaydi
+    await send(9, '/start ref_1');                        // ro'yxatdan o'tgan — hisoblanmaydi
+    await send(4, '/start ref_1'); await press(4, 'reg:g:m'); await send(4, '30');
+    assert.equal(user(1).referrals, 3);
+    assert.ok(user(1).premium_until > Date.now() / 1000 + 2.9 * 86400);
+    assert.match(lastTo(1), /3 kun VIP/);
+  } finally {
+    config.botUsername = '';
+  }
+});
+
+test('rus tili: matnlar to\'liq; ru foydalanuvchi ruscha oladi; tilni almashtirish', async () => {
+  const { default: uz } = await import('../tgcloud/lib/locales/uz.js');
+  const { default: ru } = await import('../tgcloud/lib/locales/ru.js');
+  assert.deepEqual(Object.keys(ru).sort(), Object.keys(uz).sort());
+  const ph = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
+  for (const k of Object.keys(uz)) assert.equal(ph(ru[k]), ph(uz[k]), k);
+
+  const ruMsg = (id, text) => bot.handle('message', {
+    message_id: nextMsg++, from: { id, is_bot: false, first_name: 'R', language_code: 'ru' },
+    chat: { id, type: 'private' }, date: 0, text,
+  }, {});
+  await ruMsg(50, '/start');
+  assert.match(lastTo(50), /Выберите ваш пол/);
+
+  await register(1, 'm', 25);
+  await press(1, 'set:lang:ru');
+  assert.equal(user(1).lang, 'ru');
+  assert.match(lastTo(1), /Главное меню/);
+  const kb = calls.filter((c) => c.params?.reply_markup?.keyboard).at(-1).params.reply_markup.keyboard.flat();
+  assert.ok(kb.some((b) => b.text === 'Найти собеседника'));
+  await send(1, 'Найти собеседника');                     // ruscha tugma ishlaydi
+  assert.equal(user(1).state, 'searching');
+  await send(1, 'Qidiruvni bekor qilish');                // eski o'zbekcha tugma ham
+  assert.equal(user(1).state, 'idle');
+});
+
+test('/setcommands: uz va ru buyruqlar ro\'yxati o\'rnatiladi', async () => {
+  config.adminIds.push(777);
+  try {
+    await register(777, 'm', 30);
+    await send(777, '/setcommands');
+    const sets = calls.filter((c) => c.method === 'setMyCommands');
+    assert.equal(sets.length, 2);
+    assert.ok(sets[0].params.commands.some((c) => c.command === 'filter'));
+    assert.equal(sets[1].params.language_code, 'ru');
+    assert.equal(sets[1].params.commands.length, sets[0].params.commands.length);
+  } finally {
+    config.adminIds.pop();
   }
 });

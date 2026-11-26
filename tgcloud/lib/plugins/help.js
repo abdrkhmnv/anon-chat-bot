@@ -3,6 +3,7 @@
 
 import { config } from '../config.js';
 import { menuFor } from '../core/keyboards.js';
+import { usersRepo } from '../repo/users.js';
 
 export default {
   name: 'info',
@@ -20,7 +21,10 @@ export const fallback = {
   name: 'fallback',
   setup(bot) {
     bot.on('message', async (ctx) => {
-      if (ctx.user?.state === 'searching') return ctx.reply(ctx.t('search.searching'), { reply_markup: menuFor(ctx.user) });
+      if (ctx.user?.state === 'searching') {
+        const online = Math.max(1, await usersRepo.onlineCount());
+        return ctx.reply(ctx.t('search.searching', { online }), { reply_markup: menuFor(ctx.user) });
+      }
       return ctx.reply(ctx.t('menu.main'), { reply_markup: menuFor(ctx.user) });
     });
   },

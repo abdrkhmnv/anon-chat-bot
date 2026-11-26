@@ -1,6 +1,6 @@
 // lib/repo/chats.js — suhbatlar tarixi.
 
-import { run, get, now } from '../core/db.js';
+import { run, get, all, now } from '../core/db.js';
 
 export const chatsRepo = {
   async create(a, b) {
@@ -27,6 +27,22 @@ export const chatsRepo = {
       { id, by: endedBy ?? null, ts: now() },
     );
     return res.rows?.[0] ?? null;
+  },
+
+  /** Suhbatda xabar uzatildi: faollik vaqti va xabarlar soni. */
+  async touch(id) {
+    await run('UPDATE chats SET last_msg_at = :ts, messages = messages + 1 WHERE id = :id',
+      { id, ts: now() });
+  },
+
+  /** Shuncha soniyadan beri jim turgan ochiq suhbatlar. */
+  idle(olderThanSec, limit = 20) {
+    return all(
+      `SELECT id FROM chats
+       WHERE ended_at IS NULL AND COALESCE(last_msg_at, started_at) < :cut
+       ORDER BY id LIMIT :limit`,
+      { cut: now() - olderThanSec, limit },
+    );
   },
 
   /** Foydalanuvchining oxirgi suhbati. */

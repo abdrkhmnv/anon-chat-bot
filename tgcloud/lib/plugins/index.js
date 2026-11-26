@@ -14,6 +14,10 @@ import info, { fallback } from './help.js'; // /terms, /paysupport, /menu
 import premium from './premium.js';
 import settings from './settings.js';
 import report from './report.js';
+import rating from './rating.js';
+import filter from './filter.js';
+import referral from './referral.js';
+import antispam from './antispam.js';
 import admin from './admin.js';
 import broadcast from './broadcast.js';
 import chat from './chat.js';
@@ -25,6 +29,10 @@ export const plugins = [
   premium,
   settings,
   report,
+  rating,
+  filter,
+  referral,
+  antispam,
   admin,
   broadcast,
   // ← yangi plaginlar shu yerga

@@ -1,7 +1,7 @@
 // plugins/settings.js — /settings: jins yoki yoshni o'zgartirish.
 //
 // Oqim (hammasi bitta xabar ichida tahrirlanadi):
-//   /settings → [Jinsimni] [Yoshimni] [Orqaga]
+//   /settings → [Jinsimni] [Yoshimni] [Viloyatim] [Til] [Orqaga]
 //     Jinsimni → [Yigit] [Qiz] [Orqaga] → tanlansa: "✅ Muvaffaqiyatli saqlandi." (menyu yopiladi)
 //     Yoshimni → "Yoshingizni yozing" [Orqaga] → yozilsa: "✅ Muvaffaqiyatli saqlandi." (menyu yopiladi)
 //     Orqaga   → oldingi bosqich; bosh bosqichda xabar o'chiriladi.
@@ -9,7 +9,8 @@
 import { api } from 'sdk';
 import { config } from '../config.js';
 import { usersRepo } from '../repo/users.js';
-import { inline, plainBtn as btn } from '../core/keyboards.js'; // bu menyuda emojilar oddiy
+import { inline, plainBtn as btn, menuFor } from '../core/keyboards.js'; // bu menyuda emojilar oddiy
+import { regionRows } from '../core/regions.js';
 import { parseAge } from './registration.js';
 
 const AGE_STEP = 'set_age'; // step = 'set_age:<so'rov xabari id>'
@@ -21,6 +22,8 @@ export default {
     const menuKb = (ctx) => inline([
       [btn(ctx.t('settings.btn_gender'), 'set:gender')],
       [btn(ctx.t('settings.btn_age'), 'set:age')],
+      [btn(ctx.t('settings.btn_region'), 'set:region')],
+      [btn(ctx.t('settings.btn_lang'), 'set:lang')],
       back(ctx, 'set:close'),
     ]);
     const genderKb = (ctx) => inline([
@@ -54,6 +57,31 @@ export default {
       if (what === 'menu') {
         await clearAgeStep(ctx);
         return ctx.edit(ctx.t('settings.text'), { reply_markup: menuKb(ctx) });
+      }
+      // Til va viloyat suhbat vaqtida ham o'zgartirilishi mumkin.
+      if (what === 'lang' && !value) {
+        return ctx.edit(ctx.t('settings.ask_lang'), { reply_markup: inline([
+          [btn('🇺🇿 O\'zbekcha', 'set:lang:uz'), btn('🇷🇺 Русский', 'set:lang:ru')],
+          back(ctx, 'set:menu'),
+        ]) });
+      }
+      if (what === 'lang' && (value === 'uz' || value === 'ru')) {
+        await usersRepo.update(ctx.user.id, { lang: value });
+        ctx.user.lang = value;
+        await ctx.edit(ctx.t('settings.saved'));
+        // Pastki menyu tugmalari yangi tilda bo'lishi uchun menyuni qayta yuboramiz.
+        return ctx.reply(ctx.t('menu.main'), { reply_markup: menuFor(ctx.user) });
+      }
+      if (what === 'region' && !value) {
+        return ctx.edit(ctx.t('settings.ask_region'), {
+          reply_markup: inline([...regionRows(ctx, 'set:region', btn), back(ctx, 'set:menu')]),
+        });
+      }
+      if (what === 'region' && value === 'skip') return ctx.edit(ctx.t('reg.region_later'));
+      if (what === 'region' && config.regions.includes(value)) {
+        await usersRepo.update(ctx.user.id, { region: value });
+        ctx.user.region = value;
+        return ctx.edit(ctx.t('settings.saved'));
       }
       if (ctx.user.state !== 'idle') return ctx.edit(ctx.t('settings.busy'));
 

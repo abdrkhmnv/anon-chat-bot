@@ -3,10 +3,11 @@
 // Topilmagan kalit standart tildan (uz) olinadi.
 
 import uz from '../locales/uz.js';
+import ru from '../locales/ru.js';
 import { config } from '../config.js';
 import { stripButtonEmoji } from './emoji.js';
 
-const locales = { uz };
+const locales = { uz, ru };
 
 /** Plaginlar o'z matnlarini qo'shishi uchun: extendLocale('uz', { 'myplugin.hello': '...' }) */
 export function extendLocale(lang, strings) {

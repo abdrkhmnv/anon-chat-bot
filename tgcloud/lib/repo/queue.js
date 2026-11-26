@@ -5,16 +5,28 @@
 import { run, get } from '../core/db.js';
 
 export const queueRepo = {
-  async join({ userId, gender, age, wantGender = 'any', premium = 0 }) {
+  /**
+   * Navbatga qo'shadi. region/wantRegion/ageMin/ageMax — VIP filtrlari (oddiy foydalanuvchida null),
+   * penalty — yomon baho (navbatda kechroq).
+   */
+  async join({ userId, gender, age, wantGender = 'any', premium = 0,
+    region = null, wantRegion = null, ageMin = null, ageMax = null, penalty = 0 }) {
     await run(
-      `INSERT INTO queue (user_id, gender, age, want_gender, premium, created_at)
+      `INSERT INTO queue (user_id, gender, age, want_gender, premium, created_at,
+                          region, want_region, age_min, age_max, penalty)
        -- created_at qat'iy o'sadi: bir millisekundda kelganlarda ham FIFO tartibi aniq.
        VALUES (:userId, :gender, :age, :wantGender, :premium,
-               MAX(:ts, COALESCE((SELECT MAX(created_at) FROM queue), 0) + 1))
+               MAX(:ts, COALESCE((SELECT MAX(created_at) FROM queue), 0) + 1),
+               :region, :wantRegion, :ageMin, :ageMax, :penalty)
        ON CONFLICT(user_id) DO UPDATE SET
          gender = excluded.gender, age = excluded.age, want_gender = excluded.want_gender,
-         premium = excluded.premium, created_at = excluded.created_at`,
-      { userId, gender, age, wantGender, premium: premium ? 1 : 0, ts: Date.now() },
+         premium = excluded.premium, created_at = excluded.created_at,
+         region = excluded.region, want_region = excluded.want_region,
+         age_min = excluded.age_min, age_max = excluded.age_max, penalty = excluded.penalty`,
+      {
+        userId, gender, age, wantGender, premium: premium ? 1 : 0, ts: Date.now(),
+        region, wantRegion, ageMin, ageMax, penalty: penalty ? 1 : 0,
+      },
     );
   },
 
@@ -24,7 +36,9 @@ export const queueRepo = {
   },
 
   // Mos sherikni topib, ikkalasini BITTA so'rovda navbatdan oladi (atomar).
-  async claimPartner(userId) {
+  // Filtrlar ikki tomonlama: menga mos bo'lishi VA men unga mos bo'lishim kerak.
+  // Tartib: kutish vaqti; VIP `boostMs` oldinga, yomon baholi `penaltyMs` orqaga.
+  async claimPartner(userId, { boostMs = 0, penaltyMs = 0 } = {}) {
     const res = await run(
       `WITH me AS (
          SELECT * FROM queue WHERE user_id = :me
@@ -33,13 +47,19 @@ export const queueRepo = {
          WHERE q.user_id <> me.user_id
            AND (me.want_gender = 'any' OR q.gender = me.want_gender)
            AND (q.want_gender = 'any' OR q.want_gender = me.gender)
-         ORDER BY q.created_at
+           AND (me.want_region IS NULL OR q.region = me.want_region)
+           AND (q.want_region IS NULL OR me.region = q.want_region)
+           AND (me.age_min IS NULL OR q.age >= me.age_min)
+           AND (me.age_max IS NULL OR q.age <= me.age_max)
+           AND (q.age_min IS NULL OR me.age >= q.age_min)
+           AND (q.age_max IS NULL OR me.age <= q.age_max)
+         ORDER BY q.created_at - q.premium * :boostMs + q.penalty * :penaltyMs, q.created_at
          LIMIT 1
        )
        DELETE FROM queue
        WHERE user_id IN (SELECT user_id FROM cand UNION ALL SELECT :me FROM cand)
        RETURNING *`,
-      { me: userId },
+      { me: userId, boostMs, penaltyMs },
     );
     const rows = res.rows || [];
     if (rows.length !== 2) return null;

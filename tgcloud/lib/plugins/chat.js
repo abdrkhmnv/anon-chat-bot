@@ -9,6 +9,9 @@ export default {
     const match = createMatchmaking(bot);
     bot.service('match', match);
 
+    // Jim suhbatlarni yopish: har qanday update'dan keyin (daqiqada ko'pi bilan bir marta).
+    bot.after(() => match.sweepIdle());
+
     async function doSearch(ctx, want) {
       const res = await match.search(ctx.user, want);
       if (res.status === 'chatting') return ctx.reply(ctx.t('search.already_chatting'));

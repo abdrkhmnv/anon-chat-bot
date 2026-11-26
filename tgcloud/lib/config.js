@@ -21,9 +21,29 @@ export const config = {
   minAge: 18,
   maxAge: 99,
 
-  // Navbatdagi yozuv shuncha sekunddan eski bo'lsa, "o'lik" hisoblanadi
-  // (foydalanuvchi qidiruvni unutib ketgan) va tanlovga kirmaydi.
-  
+  // Viloyatlar (kodlar). Nomlari locales/*.js da: 'region.<kod>'.
+  regions: ['tsh', 'tsv', 'and', 'bux', 'fer', 'jiz', 'xor', 'nam', 'nav', 'qas', 'qor', 'sam', 'sir', 'sur'],
+
+  // VIP yosh oralig'i tugmalari: [min, max].
+  ageRanges: [[18, 22], [23, 27], [28, 35], [36, 99]],
+
+  // Navbat: VIP shuncha soniya oldinga o'tadi, yomon bahoga ega foydalanuvchi shuncha orqada turadi.
+  vipBoostSec: 30,
+  badPenaltySec: 30,
+  // "Yomon baho": kamida `minVotes` ta 👎 va 👎 soni 👍 dan `ratio` marta ko'p.
+  badRating: { minVotes: 5, ratio: 2 },
+
+  // Shuncha daqiqa hech kim yozmasa, suhbat avtomatik yopiladi.
+  inactivityMin: 10,
+
+  // Spam himoyasi: suhbatda havola, @username, telefon raqam, kontaktni to'sish.
+  antispam: true,
+
+  // Do'st taklif qilish: har `need` ta ro'yxatdan o'tgan do'st uchun `days` kun VIP.
+  referral: { need: 3, days: 3 },
+
+  // Bot username'i (@ siz). Bo'sh bo'lsa getMe orqali aniqlanadi.
+  botUsername: '',
 
   // Qancha shikoyatdan keyin foydalanuvchi avtomatik bloklanadi.
   autoBanReports: 5,

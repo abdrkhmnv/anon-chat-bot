@@ -22,6 +22,8 @@ export const BUTTON_EMOJI = {
   '⚠️': '5467928559664242360', // ❗ qizil undov belgisi (shikoyat)
   '✏️': '5334673106202010226', // qalam
   '✅': '5427009714745517609',  // yashil belgi
+  '👍': '5469770542288478598', // baho: yoqdi
+  '👎': '5472309400536358507', // baho: yoqmadi
   '⬅️': '5469735272017043817', // 👈 chapni ko'rsatuvchi qo'l
   '➡️': '5471978009449731768', // 👉 o'ngni ko'rsatuvchi qo'l
 };

@@ -12,6 +12,8 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
 | Tasodifiy suhbatdosh qidirish | ✅ | ✅ |
 | Jins bo'yicha qidirish (`/girl`, `/boy`) | ❌ | ✅ |
 | Suhbatdoshning jinsi va yoshini ko'rish | ❌ | ✅ |
+| Viloyat va yosh oralig'i bo'yicha qidirish (`/filter`) | ❌ | ✅ |
+| Navbatda ustuvorlik (`vipBoostSec`) | ❌ | ✅ |
 
 - VIP tariflari: **3 kun, 1 hafta, 1 oy, 3 oy, 6 oy, 12 oy**. To'lov **Telegram Stars (XTR)** bilan.
   Yangi xarid amaldagi muddat ustiga qo'shiladi.
@@ -21,7 +23,15 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
   ro'yxatdan o'tganlar ulanadi. VIP qiz yigit qidirayotgan bo'lsa, unga qiz ulanmaydi.
 - Xabarlar `copyMessage` orqali uzatiladi, shuning uchun ism, username va "forwarded" belgisi ko'rinmaydi.
   Matn, rasm, video, ovozli xabar, stiker va boshqa turlar ishlaydi.
-- Bundan tashqari: `/next`, `/stop`, `/settings` (jins va yoshni o'zgartirish), shikoyat va avtomatik ban, admin buyruqlari
+- **Spam himoyasi:** suhbatda havola, `@username`, telefon raqam va kontakt yuborib bo'lmaydi (`config.antispam`).
+- **Baho:** suhbatdan keyin 👍/👎. Ko'p 👎 olganlar navbatda orqaroq turadi (`config.badRating`, `badPenaltySec`).
+- **Jimlik:** `inactivityMin` daqiqa hech kim yozmasa, suhbat avtomatik yopiladi.
+- **Onlayn soni:** qidiruv xabarida "🟢 Hozir faol: N kishi".
+- **Do'st taklif qilish (`/invite`):** har 3 ta ro'yxatdan o'tgan do'st uchun 3 kun VIP (`config.referral`).
+- **Ikki til:** o'zbek va rus (`locales/uz.js`, `locales/ru.js`). Til Telegram tiliga qarab tanlanadi,
+  `/settings` → "🌐 Til / Язык" orqali almashtiriladi.
+- **Viloyat:** ro'yxatdan o'tgach ixtiyoriy so'raladi, `/settings` da o'zgartiriladi.
+- Bundan tashqari: `/next`, `/stop`, `/settings` (jins, yosh, viloyat, til), shikoyat va avtomatik ban, admin buyruqlari
   (`/stats`, `/users`, `/user`, `/ban`, `/unban`, `/grant`, `/refund`), hamda Telegram to'lov
   qoidalari talab qiladigan `/terms` va `/paysupport`.
 
@@ -35,6 +45,7 @@ Quyidagi buyruqlar faqat `tgcloud/lib/config.js` dagi `adminIds` ro'yxatiga kiri
 - `/ban <id>` va `/unban <id>` — bloklash / blokdan chiqarish.
 - `/grant <id> <kun>` — VIP muddatini qo'lda uzaytirish.
 - `/refund <charge_id>` — Telegram Stars to'lovini qaytarish.
+- `/setcommands` — "/" menyusidagi buyruqlar ro'yxatini o'zbek va rus tillarida o'rnatadi (BotFather'ga qo'lda kiritish shart emas).
 
 `/users` ro'yxati bazadagi `users` jadvalidan olinadi; foydalanuvchilar botga kamida bir marta yozgan bo'lishi kerak.
 
@@ -73,19 +84,8 @@ Lokal testlar (platformasiz, soxta `sdk` bilan):
 npm test
 ```
 
-@BotFather'da buyruqlar ro'yxati uchun (`/setcommands`):
-```
-search - Suhbatdosh qidirish
-next - Keyingi suhbatdosh
-stop - Suhbatni tugatish
-girl - Qiz qidirish (VIP)
-boy - Yigit qidirish (VIP)
-vip - VIP tariflar
-settings - Sozlamalar (jins va yosh)
-report - Shikoyat qilish
-terms - Foydalanish shartlari
-paysupport - To'lov bo'yicha yordam
-```
+"/" menyusidagi buyruqlar: botga admin sifatida `/setcommands` yuboring — ro'yxat
+`locales/uz.js` va `locales/ru.js` dagi `bot.commands` dan olinadi.
 
 ## GitHub'dan avtomatik deploy
 
@@ -95,7 +95,8 @@ kodni `npx tgcloud push --force` bilan Telegram Serverless'ga yuklaydi.
 1. Repo → **Settings → Secrets and variables → Actions → New repository secret**:
    nomi `TGCLOUD_TOKEN`, qiymati — `npx tgcloud login` da kiritgan CLI tokeningiz.
 2. **Actions** bo'limida workflow'ni yoqing; `Deploy to Telegram Serverless` → **Run workflow**
-   bilan qo'lda ham ishga tushirish mumkin (`migrate` belgilansa, `tgcloud migrate --safe` ham bajariladi).
+   bilan qo'lda ham ishga tushirish mumkin. Har deploy'dan keyin `tgcloud migrate --safe` avtomatik bajariladi
+   (yangi ustun/jadvallar qo'shiladi; o'chirish kabi xavfli o'zgarishlar qo'llanmaydi).
 
 Muhim: endi GitHub asosiy manba. Termux'dan to'g'ridan-to'g'ri `tgcloud push` qilingan, lekin
 GitHub'ga tushmagan o'zgarishlar keyingi avtomatik deploy'da ustidan yoziladi.
@@ -118,7 +119,7 @@ tgcloud/
     services/               mantiq: matchmaking.js (qidiruv/juftlash), premium.js (Stars)
     plugins/                FUNKSIYALAR: har biri alohida fayl
       index.js              yoqilgan plaginlar ro'yxati
-      users  registration  help(/terms, /paysupport)  premium  settings  report  admin  chat
+      users  registration  help(/terms, /paysupport)  premium  settings  report  rating  filter  referral  antispam  admin  chat
     locales/uz.js           barcha matnlar
 test/                       mock sdk + testlar
 docs/tgcloud-sdk.md         platforma SDK ma'lumotnomasi

@@ -3,7 +3,7 @@
 // Hodisalar (boshqa plaginlar obuna bo'lishi mumkin):
 //   'search:start' { user, want }
 //   'chat:start'   { chatId, a, b }            — a, b: users qatorlari
-//   'chat:end'     { chat, by, reason }        — reason: 'stop'|'next'|'unavailable'|'ban'
+//   'chat:end'     { chat, by, reason }        — reason: 'stop'|'next'|'unavailable'|'ban'|'idle'
 //   'relay:before' { ctx, partnerId }          — ctx.state.blockRelay = true qilib to'xtatish mumkin
 
 import { api, BotApiError } from 'sdk';
@@ -15,6 +15,25 @@ import { menuFor, inline, btn } from '../core/keyboards.js';
 import { notify, tr } from './notify.js';
 
 const PURGE_PROBABILITY = 0.02; // cron yo'q — eskirgan navbatni vaqti-vaqti bilan tozalaymiz
+const IDLE_SWEEP_EVERY_MS = 60_000; // jim suhbatlarni tekshirish (har izolyatda daqiqada ko'pi bilan 1 marta)
+
+/** Yomon baho: kamida minVotes ta 👎 va 👎 soni 👍 dan ratio marta ko'p. */
+export function isBadRated(user) {
+  const { minVotes, ratio } = config.badRating;
+  const down = Number(user?.dislikes) || 0;
+  const up = Number(user?.likes) || 0;
+  return down >= minVotes && down > up * ratio;
+}
+
+/** Suhbat tugagach: baho (👍/👎) va shikoyat tugmalari. */
+export function afterChatKeyboard(user, chatId) {
+  return {
+    reply_markup: inline([
+      [btn(tr(user, 'btn.like'), `rate:${chatId}:1`), btn(tr(user, 'btn.dislike'), `rate:${chatId}:-1`)],
+      [btn(tr(user, 'btn.report'), `rep:${chatId}`)],
+    ]),
+  };
+}
 
 export function createMatchmaking(bot) {
   async function search(user, want = 'any') {
@@ -28,15 +47,25 @@ export function createMatchmaking(bot) {
     // "Qidirilmoqda" xabarini navbatga qo'shishdan OLDIN yuboramiz — aks holda
     // juftlik darhol topilsa, xabarlar teskari tartibda kelishi mumkin.
     const key = want === 'f' ? 'search.searching_f' : want === 'm' ? 'search.searching_m' : 'search.searching';
-    await notify(user, key, null, { reply_markup: menuFor(user, 'searching') });
+    const online = Math.max(1, await usersRepo.onlineCount());
+    await notify(user, key, { online }, { reply_markup: menuFor(user, 'searching') });
 
     await bot.emit('search:start', { user, want });
+    const vip = isPremium(user);
     await queueRepo.join({
       userId: user.id, gender: user.gender, age: user.age,
-      wantGender: want, premium: isPremium(user),
+      wantGender: want, premium: vip,
+      region: user.region ?? null,
+      // VIP filtrlari faqat VIP faol bo'lsa amal qiladi.
+      wantRegion: vip ? user.want_region ?? null : null,
+      ageMin: vip ? user.age_min ?? null : null,
+      ageMax: vip ? user.age_max ?? null : null,
+      penalty: isBadRated(user),
     });
 
-    const partner = await queueRepo.claimPartner(user.id);
+    const partner = await queueRepo.claimPartner(user.id, {
+      boostMs: config.vipBoostSec * 1000, penaltyMs: config.badPenaltySec * 1000,
+    });
     if (!partner) return { status: 'queued' };
 
     await startChat(user.id, partner.user_id);
@@ -83,10 +112,14 @@ export function createMatchmaking(bot) {
     const users = await Promise.all(ids.map((id) => usersRepo.get(id)));
     await Promise.all(users.map((u) => {
       if (!u || u.id === silentFor) return null;
-      const reportKb = { reply_markup: inline([[btn(tr(u, 'btn.report'), `rep:${chat.id}`)]]) };
+      const reportKb = afterChatKeyboard(u, chat.id);
       if (reason === 'unavailable') {
         if (u.id === by) return null; // botni bloklagan odamga yubora olmaymiz
         return notify(u, 'chat.partner_unavailable', null, { reply_markup: menuFor(u, 'idle') });
+      }
+      if (reason === 'idle') {
+        return notify(u, 'chat.ended_idle', { min: config.inactivityMin }, reportKb)
+          .then(() => notify(u, 'chat.after', null, { reply_markup: menuFor(u, 'idle') }));
       }
       if (u.id === by) {
         return notify(u, 'chat.ended_by_you', null, reportKb)
@@ -141,6 +174,7 @@ export function createMatchmaking(bot) {
     const params = { chat_id: partnerId, from_chat_id: msg.chat.id, message_id: msg.message_id };
     try {
       await api.copyMessage(params);
+      if (user.chat_id) await chatsRepo.touch(user.chat_id);
     } catch (e) {
       if (!(e instanceof BotApiError)) throw e;
       if (e.code === 403) {
@@ -160,6 +194,18 @@ export function createMatchmaking(bot) {
     return true;
   }
 
+  /** `inactivityMin` daqiqa jim turgan suhbatlarni yopadi (cron yo'q — update kelganda). */
+  let lastSweep = 0;
+  async function sweepIdle({ force = false } = {}) {
+    if (!config.inactivityMin) return 0;
+    const t = Date.now();
+    if (!force && t - lastSweep < IDLE_SWEEP_EVERY_MS) return 0;
+    lastSweep = t;
+    const rows = await chatsRepo.idle(config.inactivityMin * 60);
+    for (const r of rows) await endChat(r.id, null, 'idle');
+    return rows.length;
+  }
+
   async function purgeStale() {
     const ids = await queueRepo.purgeStale(config.queueTtlSec);
     if (ids.length) await usersRepo.resetSearching(ids);
@@ -174,5 +220,5 @@ export function createMatchmaking(bot) {
     await usersRepo.update(user.id, { state: 'idle' });
   }
 
-  return { search, startChat, endChat, stop, next, relay, purgeStale, detach, otherSide };
+  return { search, startChat, endChat, stop, next, relay, purgeStale, sweepIdle, detach, otherSide };
 }
