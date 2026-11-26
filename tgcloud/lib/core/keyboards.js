@@ -16,8 +16,8 @@ export const MENU_COLORS = {
   'btn.search': GREEN,    // 🔎 Suhbatdosh qidirish
   'btn.search_f': RED,    // 👩 Qiz qidirish
   'btn.search_m': BLUE,   // 👨 Yigit qidirish
-  'btn.premium': BLUE,    // 💎 VIP
   'btn.profile': null,    // 👤 Profil — oddiy
+  'btn.premium': BLUE,    // 💎 VIP
   'btn.help': null,       // ℹ️ Yordam — oddiy
   'btn.next': BLUE,       // ⏭ Keyingisi
   'btn.stop': RED,        // ⛔ Suhbatni tugatish
