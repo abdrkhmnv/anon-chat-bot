@@ -64,7 +64,7 @@ export default {
   'search.searching_f': '🔎 <b>Qiz</b> suhbatdosh qidirilmoqda...',
   'search.searching_m': '🔎 <b>Yigit</b> suhbatdosh qidirilmoqda...',
   'search.online': '🟢 Hozir faol: <b>{online}</b> kishi',
-  'search.already_chatting': '💬 Siz hozir suhbatdasiz. Avval /stop yoki /next bosing.',
+  'search.already_chatting': '💬 <b>Sizda tugallanmagan suhbat bor!</b>\n\nAvval joriy suhbatni yakunlang — buning uchun 👉 /stop ni bosing.\nShundan so\'ng /next orqali yangi muloqotchi topishingiz mumkin.',
   'search.cancelled': '❌ Qidiruv bekor qilindi.',
   'search.not_searching': 'Siz hozir qidiruvda ham, suhbatda ham emassiz.',
   'search.premium_only': '💎 Jins bo\'yicha qidirish faqat <b>VIP</b> foydalanuvchilar uchun.\n\nVIP bilan:\n• qiz yoki yigitni tanlab qidirasiz\n• suhbatdoshning jinsi va yoshini ko\'rasiz',

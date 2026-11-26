@@ -35,7 +35,10 @@ export default {
     bot.hears('btn.stop', stop);
     bot.hears('btn.cancel', stop);
 
+    // /next suhbatni TUGATMAYDI: suhbat davomida avval /stop bosish kerak.
+    // Suhbat tugagach (yoki suhbat bo'lmasa) — yangi muloqotchi qidiradi.
     const next = async (ctx) => {
+      if (ctx.user.state === 'chatting') return ctx.reply(ctx.t('search.already_chatting'));
       const res = await match.next(ctx.user);
       if (res.status === 'chatting') return ctx.reply(ctx.t('search.already_chatting'));
     };

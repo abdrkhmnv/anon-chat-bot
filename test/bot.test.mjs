@@ -113,10 +113,22 @@ test('/stop: ikkala tomon ham bo\'shaydi; takroriy /stop xavfsiz; /next yangi qi
 
   await send(1, '/search');
   await send(2, '/search');
-  await send(1, '/next');
-  assert.equal(user(1).state, 'searching');
-  assert.equal(user(2).state, 'idle');
+  // Suhbat davomida /next (yoki "Keyingisi" tugmasi) suhbatni tugatmaydi — /stop ni so'raydi.
+  for (const msg of ['/next', '⏭ Keyingisi', 'Keyingisi']) {
+    await send(1, msg);
+    assert.equal(user(1).state, 'chatting', msg);
+    assert.equal(user(2).state, 'chatting', msg);
+    assert.match(lastTo(1), /tugallanmagan suhbat bor/, msg);
+    assert.match(lastTo(1), /\/stop/, msg);
+  }
+  assert.equal(calls.filter((c) => c.method === 'copyMessage').length, 0, 'buyruq sherikka uzatilmaydi');
+  await send(1, '/search');                   // /search ham xuddi shunday
+  assert.match(lastTo(1), /tugallanmagan suhbat bor/);
+
+  await send(1, '/stop');
   assert.match(textsTo(2).join('\n'), /Muloqotchi siz bilan muloqotni uzdi/);
+  await send(2, '/next');                     // suhbat tugagach — yangi qidiruv
+  assert.equal(user(2).state, 'searching');
 });
 
 test('sherik botni bloklagan bo\'lsa suhbat yopiladi', async () => {
