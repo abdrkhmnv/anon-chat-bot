@@ -9,7 +9,7 @@
 import { api } from 'sdk';
 import { config } from '../config.js';
 import { usersRepo } from '../repo/users.js';
-import { inline, btn } from '../core/keyboards.js';
+import { inline, plainBtn as btn } from '../core/keyboards.js'; // bu menyuda emojilar oddiy
 import { parseAge } from './registration.js';
 
 const AGE_STEP = 'set_age'; // step = 'set_age:<so'rov xabari id>'

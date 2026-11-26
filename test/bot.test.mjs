@@ -212,12 +212,14 @@ test('/settings: bitta o\'zgartirishdan keyin yopiladi; Orqaga ishlaydi; tugmala
   assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
   const kb = calls.at(-1).params.reply_markup.inline_keyboard;
   assert.deepEqual(kb.map((r) => r.map((b) => [b.text, b.callback_data, b.style])),
-    [[['Jinsimni 👩', 'set:gender', undefined]], [['Yoshimni', 'set:age', undefined]], [['Orqaga', 'set:close', undefined]]]);
-  assert.ok(kb.flat().every((b) => b.icon_custom_emoji_id));
+    [[['👨 Jinsimni 👩', 'set:gender', undefined]], [['📅 Yoshimni', 'set:age', undefined]], [['⬅️ Orqaga', 'set:close', undefined]]]);
+  assert.ok(kb.flat().every((b) => !b.icon_custom_emoji_id)); // oddiy emojilar
 
   // Jins: o'sha xabar tahrirlanadi, tanlangach "saqlandi" va tugmalarsiz yopiladi.
   await press(1, 'set:gender');
   assert.match(lastEdit().text, /Jinsingizni tanlang/);
+  assert.ok(lastEdit().reply_markup.inline_keyboard.flat().every((b) => !b.icon_custom_emoji_id));
+  assert.equal(lastEdit().reply_markup.inline_keyboard[0][0].text, '👨 Yigit');
   await press(1, 'set:gender:f');
   assert.equal(user(1).gender, 'f');
   assert.equal(lastEdit().text, '✅ Muvaffaqiyatli saqlandi.');
@@ -342,7 +344,8 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   await press(998, 'adminusers:2'); // ⬅️ oldingi
 
   const all = calls.flatMap(buttonsOf).concat(calls.filter((c) => c.method === 'editMessageText').flatMap(buttonsOf));
-  const withEmoji = all.filter((b) => !(b.text.startsWith('Spam') || ['Haqorat', '18+ kontent', 'Boshqa'].includes(b.text)));
+  const withEmoji = all.filter((b) => !(b.text.startsWith('Spam') || ['Haqorat', '18+ kontent', 'Boshqa'].includes(b.text))
+    && !String(b.callback_data).startsWith('set:')); // /settings — oddiy emojilar
   assert.ok(withEmoji.length >= 15, `tugmalar soni: ${withEmoji.length}`);
   for (const b of withEmoji) {
     assert.ok(ids.has(b.icon_custom_emoji_id), `ikonka yo'q: ${JSON.stringify(b)}`);

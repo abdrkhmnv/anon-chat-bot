@@ -43,3 +43,5 @@ export function menuFor(user, state = user?.state) {
 export const inline = (rows) => ({ inline_keyboard: rows });
 /** Inline tugma (xabar ostidagi). Rangsiz — ranglar faqat pastki menyuda. */
 export const btn = (text, data) => withIcon({ text, callback_data: data });
+/** Inline tugma, oddiy emoji bilan (premium ikonkasiz) — masalan /settings. */
+export const plainBtn = (text, data) => ({ text, callback_data: data });
