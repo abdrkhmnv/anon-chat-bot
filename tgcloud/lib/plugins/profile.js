@@ -2,7 +2,7 @@
 
 import { config } from '../config.js';
 import { usersRepo, isPremium } from '../repo/users.js';
-import { inline, btn, menuFor } from '../core/keyboards.js';
+import { inline, btn, menuFor, BLUE } from '../core/keyboards.js';
 import { formatDate } from '../services/premium.js';
 import { genderKeyboard, parseAge } from './registration.js';
 
@@ -18,7 +18,7 @@ export default {
         gender: ctx.t(`gender.${u.gender}`), age: u.age, chats: u.chats_count, plan,
       }), {
         reply_markup: inline([
-          [btn(ctx.t('profile.btn_age'), 'prof:age'), btn(ctx.t('profile.btn_gender'), 'prof:gender')],
+          [btn(ctx.t('profile.btn_age'), 'prof:age', BLUE), btn(ctx.t('profile.btn_gender'), 'prof:gender', BLUE)],
         ]),
       });
     }

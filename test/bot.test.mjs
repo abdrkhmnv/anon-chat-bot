@@ -318,3 +318,25 @@ test("VIP: /vip, /premium va eski '⭐ Premium' tugmasi tariflarni ochadi; matnd
   const { default: uz } = await import('../tgcloud/lib/locales/uz.js');
   for (const [k, v] of Object.entries(uz)) assert.doesNotMatch(v, /premium/i, k);
 });
+
+test('rangli tugmalar: menyu va inline tugmalarda style, o\'chirsa yo\'qoladi', async () => {
+  const { menuFor, btn, RED } = await import('../tgcloud/lib/core/keyboards.js');
+  const allowed = new Set(['primary', 'success', 'danger', undefined]);
+  const styles = [];
+  for (const s of ['idle', 'searching', 'chatting']) {
+    for (const b of menuFor({ lang: 'uz' }, s).keyboard.flat()) {
+      assert.ok(allowed.has(b.style), b.text);
+      styles.push(b.style);
+    }
+  }
+  assert.ok(new Set(styles.filter(Boolean)).size === 3, 'uchala rang ham ishlatilgan');
+  assert.equal(btn('❌ Bekor', 'x', RED).style, 'danger');
+  assert.equal(btn('Oddiy', 'x').style, undefined);
+  config.coloredButtons = false;
+  try {
+    assert.equal(btn('❌ Bekor', 'x', RED).style, undefined);
+    assert.equal(menuFor({ lang: 'uz' }, 'chatting').keyboard[0][1].style, undefined);
+  } finally {
+    config.coloredButtons = true;
+  }
+});

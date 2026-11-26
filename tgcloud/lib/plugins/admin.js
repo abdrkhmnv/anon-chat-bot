@@ -12,7 +12,7 @@ import { queueRepo } from '../repo/queue.js';
 import { chatsRepo } from '../repo/chats.js';
 import { paymentsRepo } from '../repo/payments.js';
 import { formatDate } from '../services/premium.js';
-import { btn } from '../core/keyboards.js';
+import { btn, BLUE } from '../core/keyboards.js';
 
 export default {
   name: 'admin',
@@ -93,8 +93,8 @@ export default {
       const keyboard = [];
       if (page > 1 || page < pages) {
         const nav = [];
-        if (page > 1) nav.push(btn('⬅️ Oldingi', `adminusers:${page - 1}`));
-        if (page < pages) nav.push(btn('Keyingi ➡️', `adminusers:${page + 1}`));
+        if (page > 1) nav.push(btn('⬅️ Oldingi', `adminusers:${page - 1}`, BLUE));
+        if (page < pages) nav.push(btn('Keyingi ➡️', `adminusers:${page + 1}`, BLUE));
         keyboard.push(nav);
       }
       const extra = keyboard.length ? { reply_markup: { inline_keyboard: keyboard } } : {};

@@ -6,7 +6,7 @@
 import { api, BotApiError } from 'sdk';
 import { config, isAdmin } from '../config.js';
 import { run, get, all, now } from '../core/db.js';
-import { inline, btn } from '../core/keyboards.js';
+import { inline, btn, GREEN, RED } from '../core/keyboards.js';
 
 const AUDIENCES = {
   all:     '1 = 1',
@@ -178,7 +178,7 @@ export default {
       await ctx.reply('👇 Oldindan ko\'rish:');
       await api.copyMessage({ chat_id: ctx.chatId, from_chat_id: ctx.chatId, message_id: src.message_id });
       return ctx.reply(`Bu xabar <b>${b.total}</b> ta foydalanuvchiga (${AUDIENCE_TITLES[audience]}) yuboriladi.`,
-        { reply_markup: inline([[btn('✅ Yuborish', `bc:go:${b.id}`), btn('❌ Bekor', `bc:no:${b.id}`)]]) });
+        { reply_markup: inline([[btn('✅ Yuborish', `bc:go:${b.id}`, GREEN), btn('❌ Bekor', `bc:no:${b.id}`, RED)]]) });
     }));
 
     bot.action('bc', async (ctx) => {

@@ -14,6 +14,9 @@ export const config = {
   // Bot egasida Telegram Premium bo'lishi shart. false = oddiy emojilar qoladi.
   premiumEmojiButtons: true,
 
+  // Rangli tugmalar (ko'k/yashil/qizil). Ranglar: lib/core/keyboards.js -> MENU_COLORS va btn(..., rang).
+  coloredButtons: true,
+
   // Minimal / maksimal yosh. Tanishuv boti — 18+ tavsiya etiladi.
   minAge: 18,
   maxAge: 99,

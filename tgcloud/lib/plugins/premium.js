@@ -3,7 +3,7 @@
 
 import { config } from '../config.js';
 import { isPremium } from '../repo/users.js';
-import { inline, btn, menuFor } from '../core/keyboards.js';
+import { inline, btn, menuFor, GREEN } from '../core/keyboards.js';
 import { createPremium, formatDate } from '../services/premium.js';
 
 export default {
@@ -19,6 +19,7 @@ export default {
         rows.push(plans.slice(i, i + 2).map((p) => btn(
           ctx.t('premium.plan_btn', { title: premium.planTitle(ctx.lang, p), stars: p.stars }),
           `buy:${p.id}`,
+          GREEN,
         )));
       }
       return inline(rows);
