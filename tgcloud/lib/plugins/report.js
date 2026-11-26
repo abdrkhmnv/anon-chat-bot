@@ -4,7 +4,7 @@ import { config } from '../config.js';
 import { usersRepo } from '../repo/users.js';
 import { chatsRepo, otherSide } from '../repo/chats.js';
 import { reportsRepo } from '../repo/reports.js';
-import { inline, btn, RED } from '../core/keyboards.js';
+import { inline, btn } from '../core/keyboards.js';
 
 const REASONS = ['spam', 'abuse', 'adult', 'other'];
 
@@ -12,7 +12,7 @@ export default {
   name: 'report',
   setup(bot) {
     const reasonsKb = (ctx, chatId) => inline(
-      REASONS.map((r) => [btn(ctx.t(`report.reason.${r}`), `repr:${chatId}:${r}`, RED)]),
+      REASONS.map((r) => [btn(ctx.t(`report.reason.${r}`), `repr:${chatId}:${r}`)]),
     );
 
     // /report — joriy yoki oxirgi suhbat bo'yicha.

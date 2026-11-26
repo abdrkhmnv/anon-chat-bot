@@ -4,11 +4,11 @@
 
 import { config } from '../config.js';
 import { usersRepo } from '../repo/users.js';
-import { menuFor, inline, btn, BLUE, RED } from '../core/keyboards.js';
+import { menuFor, inline, btn } from '../core/keyboards.js';
 
 export const genderKeyboard = (ctx, prefix = 'reg:g') => inline([[
-  btn('👨 ' + ctx.t('gender.m'), `${prefix}:m`, BLUE),
-  btn('👩 ' + ctx.t('gender.f'), `${prefix}:f`, RED),
+  btn('👨 ' + ctx.t('gender.m'), `${prefix}:m`),
+  btn('👩 ' + ctx.t('gender.f'), `${prefix}:f`),
 ]]);
 
 // Ro'yxatdan o'tmasdan ham ishlaydigan buyruqlar.

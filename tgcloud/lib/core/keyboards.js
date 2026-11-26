@@ -41,5 +41,5 @@ export function menuFor(user, state = user?.state) {
 }
 
 export const inline = (rows) => ({ inline_keyboard: rows });
-/** Inline tugma. `style`: BLUE | GREEN | RED yoki berilmasa oddiy. */
-export const btn = (text, data, style) => paint(withIcon({ text, callback_data: data }), style);
+/** Inline tugma (xabar ostidagi). Rangsiz — ranglar faqat pastki menyuda. */
+export const btn = (text, data) => withIcon({ text, callback_data: data });

@@ -203,32 +203,55 @@ test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, as
   assert.equal(user(1).state, 'idle');
 });
 
-test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', async () => {
+test('/settings: bitta o\'zgartirishdan keyin yopiladi; Orqaga ishlaydi; tugmalar rangsiz', async () => {
+  const edits = () => calls.filter((c) => c.method === 'editMessageText');
+  const lastEdit = () => edits().at(-1).params;
   await register(1, 'm', 25);
+
   await send(1, '/settings');
   assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
   const kb = calls.at(-1).params.reply_markup.inline_keyboard;
   assert.deepEqual(kb.map((r) => r.map((b) => [b.text, b.callback_data, b.style])),
-    [[['Jinsimni 👩', 'set:gender', undefined]], [['Yoshimni', 'set:age', undefined]]]);
-  assert.ok(kb[0][0].icon_custom_emoji_id && kb[1][0].icon_custom_emoji_id);
+    [[['Jinsimni 👩', 'set:gender', undefined]], [['Yoshimni', 'set:age', undefined]], [['Orqaga', 'set:close', undefined]]]);
+  assert.ok(kb.flat().every((b) => b.icon_custom_emoji_id));
 
+  // Jins: o'sha xabar tahrirlanadi, tanlangach "saqlandi" va tugmalarsiz yopiladi.
   await press(1, 'set:gender');
+  assert.match(lastEdit().text, /Jinsingizni tanlang/);
   await press(1, 'set:gender:f');
   assert.equal(user(1).gender, 'f');
+  assert.equal(lastEdit().text, '✅ Muvaffaqiyatli saqlandi.');
+  assert.equal(lastEdit().reply_markup, undefined);
 
+  // Orqaga: jins tanlashdan bosh menyuga, bosh menyudan — xabar o'chadi.
+  await press(1, 'set:gender');
+  await press(1, 'set:menu');
+  assert.equal(lastEdit().text, "Qaysi sozlamani o'zgartirasiz:");
+  await press(1, 'set:close');
+  assert.equal(calls.at(-1).method, 'deleteMessage');
+
+  // Yosh: noto'g'ri raqam — qayta so'raydi; to'g'ri — saqlanadi va yopiladi.
   await press(1, 'set:age');
-  assert.match(lastTo(1), /Yoshingizni yozing/);
+  assert.match(lastEdit().text, /Yoshingizni yozing/);
+  assert.ok(user(1).step.startsWith('set_age'));
   await send(1, '12');
   assert.match(lastTo(1), /18 dan 99 gacha/);
   await send(1, '30');
   assert.equal(user(1).age, 30);
-  assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
+  assert.equal(user(1).step, null);
+  assert.equal(lastTo(1), '✅ Muvaffaqiyatli saqlandi.');
+  await send(1, '40'); // yopilgan — endi yosh sifatida qabul qilinmaydi
+  assert.equal(user(1).age, 30);
 
-  await register(2, 'm', 20);
-  await send(1, '/search');
-  await send(2, '/search');
+  // Yosh kiritish o'rtasida menyu tugmasi bosilsa — bekor bo'ladi va tugma ishlaydi.
   await press(1, 'set:age');
-  assert.match(lastTo(1), /sozlamalarni o'zgartirib bo'lmaydi/);
+  await register(2, 'f', 20);
+  await send(1, 'Suhbatdosh qidirish');
+  assert.equal(user(1).step, null);
+  assert.equal(user(1).state, 'searching');
+  await send(2, '/search');
+  await press(1, 'set:gender');
+  assert.match(lastEdit().text, /sozlamalarni o'zgartirib bo'lmaydi/);
 });
 
 test("/help, /profile o'chirilgan; menyuda Profil/Yordam yo'q; suhbat tugaganda shikoyat tugmasi bor", async () => {
@@ -367,7 +390,7 @@ test("VIP: /vip, /premium va eski '⭐ Premium' tugmasi tariflarni ochadi; matnd
 });
 
 test('rangli tugmalar: menyu va inline tugmalarda style, o\'chirsa yo\'qoladi', async () => {
-  const { menuFor, btn, RED } = await import('../tgcloud/lib/core/keyboards.js');
+  const { menuFor, btn } = await import('../tgcloud/lib/core/keyboards.js');
   const allowed = new Set(['primary', 'success', 'danger', undefined]);
   const styles = [];
   for (const s of ['idle', 'searching', 'chatting']) {
@@ -377,11 +400,9 @@ test('rangli tugmalar: menyu va inline tugmalarda style, o\'chirsa yo\'qoladi', 
     }
   }
   assert.ok(new Set(styles.filter(Boolean)).size === 3, 'uchala rang ham ishlatilgan');
-  assert.equal(btn('❌ Bekor', 'x', RED).style, 'danger');
-  assert.equal(btn('Oddiy', 'x').style, undefined);
+  assert.equal(btn('❌ Bekor', 'x').style, undefined); // inline tugmalar rangsiz
   config.coloredButtons = false;
   try {
-    assert.equal(btn('❌ Bekor', 'x', RED).style, undefined);
     assert.equal(menuFor({ lang: 'uz' }, 'chatting').keyboard[0][1].style, undefined);
   } finally {
     config.coloredButtons = true;

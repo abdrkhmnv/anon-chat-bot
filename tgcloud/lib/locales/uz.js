@@ -57,8 +57,9 @@ export default {
   'settings.text': 'Qaysi sozlamani o\'zgartirasiz:',
   'settings.btn_gender': '👨 Jinsimni 👩',
   'settings.btn_age': '📅 Yoshimni',
+  'settings.btn_back': '⬅️ Orqaga',
   'settings.busy': 'Suhbat yoki qidiruv vaqtida sozlamalarni o\'zgartirib bo\'lmaydi.',
-  'settings.saved': '✅ Saqlandi.',
+  'settings.saved': '✅ Muvaffaqiyatli saqlandi.',
 
   // premium
   'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Jins bo\'yicha qidirish\n• 🎂 Suhbatdoshning jinsi va yoshini ko\'rish\n\n{status}\n\nTarifni tanlang (to\'lov Telegram Stars ⭐ orqali):',
