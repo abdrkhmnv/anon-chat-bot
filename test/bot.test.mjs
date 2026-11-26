@@ -636,21 +636,34 @@ test('rus tili: matnlar to\'liq; ru foydalanuvchi ruscha oladi; tilni almashtiri
   assert.equal(user(1).state, 'idle');
 });
 
-test('/setcommands: uz va ru buyruqlar ro\'yxati o\'rnatiladi', async () => {
+test('buyruqlar ro\'yxati: deploy\'dan keyin avtomatik bir marta; /setcommands majburan', async () => {
+  const sets = () => calls.filter((c) => c.method === 'setMyCommands');
+  await send(1, '/start');                       // birinchi update — avtomatik
+  assert.equal(sets().length, 2);
+  const [uz, ru] = sets();
+  assert.equal(uz.params.language_code, undefined);
+  assert.equal(ru.params.language_code, 'ru');
+  assert.deepEqual(uz.params.commands.map((c) => c.command),
+    ['next', 'stop', 'girl', 'boy', 'vip', 'filter', 'invite', 'settings', 'report', 'terms', 'paysupport']);
+  assert.equal(ru.params.commands.length, uz.params.commands.length);
+  assert.ok(!uz.params.commands.some((c) => ['search', 'help', 'profile'].includes(c.command)));
+
+  await send(1, '/start');                       // o'zgarmagan — qayta yuborilmaydi
+  assert.equal(sets().length, 2);
+  const fresh = createBot();                     // yangi izolyat, ro'yxat o'sha — yuborilmaydi
+  await fresh.handle('message', { message_id: 1, from: from(1), chat: { id: 1, type: 'private' }, date: 0, text: '/start' }, {});
+  assert.equal(sets().length, 2);
+
   config.adminIds.push(777);
   try {
     await register(777, 'm', 30);
-    await send(777, '/setcommands');
-    const sets = calls.filter((c) => c.method === 'setMyCommands');
-    assert.equal(sets.length, 2);
-    assert.ok(sets[0].params.commands.some((c) => c.command === 'filter'));
-    assert.equal(sets[1].params.language_code, 'ru');
-    assert.equal(sets[1].params.commands.length, sets[0].params.commands.length);
+    await send(777, '/setcommands');             // majburan
+    assert.equal(sets().length, 4);
+    assert.match(lastTo(777), /yangilandi/);
   } finally {
     config.adminIds.pop();
   }
 });
-
 test('/search olib tashlangan: suhbatsiz holatda bosh menyu, qidiruv boshlanmaydi', async () => {
   await register(1, 'm', 25);
   await send(1, '/search');

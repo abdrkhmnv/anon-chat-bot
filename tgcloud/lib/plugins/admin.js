@@ -7,9 +7,8 @@
 //   /users [sahifa]       — barcha foydalanuvchilar (10 tadan)
 //   /setcommands          — "/" menyusidagi buyruqlarni o'rnatish (uz + ru)
 
-import { api } from 'sdk';
 import { isAdmin } from '../config.js';
-import { t } from '../core/i18n.js';
+import { syncCommands } from './commands.js';
 import { usersRepo } from '../repo/users.js';
 import { queueRepo } from '../repo/queue.js';
 import { chatsRepo } from '../repo/chats.js';
@@ -106,15 +105,10 @@ export default {
 
     bot.command('users', admin((ctx) => usersPage(ctx, ctx.args[0] || 1)));
 
-    // /setcommands — "/" menyusidagi buyruqlar ro'yxatini o'zbek va rus tillarida o'rnatadi
-    // (BotFather'ga qo'lda kiritish shart emas). Ro'yxat: locales/*.js -> 'bot.commands'.
+    // /setcommands — "/" menyusidagi buyruqlarni darhol qayta o'rnatadi (uz + ru).
+    // Odatda shart emas: commands plagini deploy'dan keyin o'zi yangilaydi.
     bot.command('setcommands', admin(async (ctx) => {
-      const parse = (s) => s.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
-        const [command, ...rest] = l.split(' - ');
-        return { command: command.trim(), description: rest.join(' - ').trim() };
-      });
-      await api.setMyCommands({ commands: parse(t('uz', 'bot.commands')) });
-      await api.setMyCommands({ commands: parse(t('ru', 'bot.commands')), language_code: 'ru' });
+      await syncCommands({ force: true });
       return ctx.reply('✅ Buyruqlar ro\'yxati yangilandi (uz + ru).');
     }));
     bot.action('adminusers', async (ctx) => {

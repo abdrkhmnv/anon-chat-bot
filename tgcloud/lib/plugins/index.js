@@ -18,6 +18,7 @@ import rating from './rating.js';
 import filter from './filter.js';
 import referral from './referral.js';
 import antispam from './antispam.js';
+import commands from './commands.js';
 import admin from './admin.js';
 import broadcast from './broadcast.js';
 import chat from './chat.js';
@@ -33,6 +34,7 @@ export const plugins = [
   filter,
   referral,
   antispam,
+  commands,
   admin,
   broadcast,
   // ← yangi plaginlar shu yerga

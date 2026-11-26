@@ -45,7 +45,7 @@ Quyidagi buyruqlar faqat `tgcloud/lib/config.js` dagi `adminIds` ro'yxatiga kiri
 - `/ban <id>` va `/unban <id>` — bloklash / blokdan chiqarish.
 - `/grant <id> <kun>` — VIP muddatini qo'lda uzaytirish.
 - `/refund <charge_id>` — Telegram Stars to'lovini qaytarish.
-- `/setcommands` — "/" menyusidagi buyruqlar ro'yxatini o'zbek va rus tillarida o'rnatadi (BotFather'ga qo'lda kiritish shart emas).
+- `/setcommands` — "/" menyusidagi buyruqlar ro'yxatini darhol qayta o'rnatadi. Odatda shart emas: deploy'dan keyin bot ro'yxatni o'zi yangilaydi.
 
 `/users` ro'yxati bazadagi `users` jadvalidan olinadi; foydalanuvchilar botga kamida bir marta yozgan bo'lishi kerak.
 
@@ -84,8 +84,9 @@ Lokal testlar (platformasiz, soxta `sdk` bilan):
 npm test
 ```
 
-"/" menyusidagi buyruqlar: botga admin sifatida `/setcommands` yuboring — ro'yxat
-`locales/uz.js` va `locales/ru.js` dagi `bot.commands` dan olinadi.
+"/" menyusidagi buyruqlar `locales/uz.js` va `locales/ru.js` dagi `bot.commands` dan olinadi.
+Ro'yxatni o'zgartirib deploy qilsangiz, bot birinchi kelgan xabardan keyin uni Telegram'da
+o'zi yangilaydi (o'zbekcha — hamma uchun, ruscha — Telegram tili rus bo'lganlar uchun).
 
 ## GitHub'dan avtomatik deploy
 
