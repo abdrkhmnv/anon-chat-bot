@@ -1,5 +1,5 @@
 // plugins/filter.js — /filter (VIP): viloyat va yosh oralig'i bo'yicha qidirish.
-// Filtr har qanday qidiruvga (/search, qiz/yigit) qo'shiladi va faqat VIP faol bo'lsa amal qiladi.
+// Filtr har qanday qidiruvga (/next, qiz/yigit) qo'shiladi va faqat VIP faol bo'lsa amal qiladi.
 // Oqim settings kabi: bitta xabar tahrirlanadi, saqlangach yopiladi.
 
 import { api } from 'sdk';

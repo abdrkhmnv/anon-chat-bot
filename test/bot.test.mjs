@@ -41,7 +41,7 @@ const makePremium = (id, days = 30) =>
 test("ro'yxatdan o'tish: jins, yosh, yosh chegarasi", async () => {
   await send(1, '/start');
   assert.match(lastTo(1), /Jinsingizni tanlang/);
-  await send(1, '/search'); // ro'yxatdan o'tmagan — qidiruv ishlamaydi
+  await send(1, '🔎 Suhbatdosh qidirish'); // ro'yxatdan o'tmagan — qidiruv ishlamaydi
   assert.equal(user(1).state, 'idle');
   await press(1, 'reg:g:f');
   assert.match(lastTo(1), /Yoshingizni yozing/);
@@ -60,9 +60,9 @@ test("ro'yxatdan o'tish: jins, yosh, yosh chegarasi", async () => {
 test('ikki oddiy foydalanuvchi ulanadi; jins/yosh ko\'rinmaydi; xabar anonim uzatiladi', async () => {
   await register(1, 'm', 25);
   await register(2, 'f', 22);
-  await send(1, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
   assert.equal(user(1).state, 'searching');
-  await send(2, '/search');
+  await send(2, '🔎 Suhbatdosh qidirish');
   assert.equal(user(1).state, 'chatting');
   assert.equal(user(1).partner_id, 2);
   assert.equal(user(2).partner_id, 1);
@@ -88,11 +88,11 @@ test('premium yigit qiz qidiradi: yigit bilan ulanmaydi, qizga ulanadi va uning 
   makePremium(3);
   await send(3, '/girl');
   await register(1, 'm', 30);
-  await send(1, '/search');            // yigit — premium yigitga mos emas
+  await send(1, '🔎 Suhbatdosh qidirish');            // yigit — premium yigitga mos emas
   assert.equal(user(1).state, 'searching');
   assert.equal(user(3).state, 'searching');
   await register(4, 'f', 21);
-  await send(4, '/search');            // qiz: navbatda 3 (qiz kutyapti) va 1 (har kim)
+  await send(4, '🔎 Suhbatdosh qidirish');            // qiz: navbatda 3 (qiz kutyapti) va 1 (har kim)
   // FIFO: 3 birinchi navbatga turgan — qiz 3 ga ulanadi
   assert.equal(user(4).partner_id, 3);
   assert.match(lastTo(3), /Qiz, 21 yosh/);          // premium — ko'radi
@@ -103,16 +103,16 @@ test('premium yigit qiz qidiradi: yigit bilan ulanmaydi, qizga ulanadi va uning 
 test('/stop: ikkala tomon ham bo\'shaydi; takroriy /stop xavfsiz; /next yangi qidiradi', async () => {
   await register(1, 'm', 25);
   await register(2, 'f', 22);
-  await send(1, '/search');
-  await send(2, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
   await Promise.all([send(1, '/stop'), send(2, '/stop')]);
   assert.equal(user(1).state, 'idle');
   assert.equal(user(2).state, 'idle');
   const ended = calls.filter((c) => c.method === 'sendMessage' && /^⛔/.test(c.params.text));
   assert.equal(ended.length, 2, 'har biriga bitta xabar');
 
-  await send(1, '/search');
-  await send(2, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
   // Suhbat davomida /next (yoki "Keyingisi" tugmasi) suhbatni tugatmaydi — /stop ni so'raydi.
   for (const msg of ['/next', '⏭ Keyingisi', 'Keyingisi']) {
     await send(1, msg);
@@ -122,8 +122,11 @@ test('/stop: ikkala tomon ham bo\'shaydi; takroriy /stop xavfsiz; /next yangi qi
     assert.match(lastTo(1), /\/stop/, msg);
   }
   assert.equal(calls.filter((c) => c.method === 'copyMessage').length, 0, 'buyruq sherikka uzatilmaydi');
-  await send(1, '/search');                   // /search ham xuddi shunday
+  await send(1, '🔎 Suhbatdosh qidirish');     // qidirish tugmasi ham xuddi shunday
   assert.match(lastTo(1), /tugallanmagan suhbat bor/);
+  await send(1, '/search');                    // olib tashlangan buyruq — sherikka uzatilmaydi
+  assert.match(lastTo(1), /Bunday buyruq yo'q/);
+  assert.equal(calls.filter((c) => c.method === 'copyMessage').length, 0);
 
   await send(1, '/stop');
   assert.match(textsTo(2).join('\n'), /Muloqotchi siz bilan muloqotni uzdi/);
@@ -134,8 +137,8 @@ test('/stop: ikkala tomon ham bo\'shaydi; takroriy /stop xavfsiz; /next yangi qi
 test('sherik botni bloklagan bo\'lsa suhbat yopiladi', async () => {
   await register(1, 'm', 25);
   await register(2, 'f', 22);
-  await send(1, '/search');
-  await send(2, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
   blocked.add(2);
   await send(1, 'salom');
   assert.equal(user(1).state, 'idle');
@@ -147,7 +150,7 @@ test('bir vaqtda 200 kishi qidirsa — hech kim ikki suhbatga tushmaydi', async 
   const ids = Array.from({ length: 200 }, (_, i) => 100 + i);
   for (const id of ids) await register(id, id % 3 ? 'm' : 'f', 20 + (id % 10));
   ids.filter((id) => id % 5 === 0).forEach((id) => makePremium(id));
-  await Promise.all(ids.map((id) => send(id, id % 5 === 0 ? (id % 2 ? '/girl' : '/boy') : '/search')));
+  await Promise.all(ids.map((id) => send(id, id % 5 === 0 ? (id % 2 ? '/girl' : '/boy') : '🔎 Suhbatdosh qidirish')));
   const rows = raw().prepare("SELECT * FROM users WHERE id >= 100").all();
   for (const u of rows) {
     if (u.state === 'chatting') {
@@ -204,8 +207,8 @@ test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, as
   for (let i = 0; i < config.autoBanReports; i++) {
     const r = 10 + i;
     await register(r, 'm', 25);
-    await send(1, '/search');
-    await send(r, '/search');
+    await send(1, '🔎 Suhbatdosh qidirish');
+    await send(r, '🔎 Suhbatdosh qidirish');
     await send(r, '/stop');
     const chatId = raw().prepare('SELECT max(id) AS id FROM chats').get().id;
     await press(r, `repr:${chatId}:abuse`);
@@ -213,7 +216,7 @@ test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, as
   }
   assert.equal(user(1).reports, config.autoBanReports);
   assert.equal(user(1).banned, 1);
-  await send(1, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
   assert.match(lastTo(1), /bloklangansiz/);
   assert.equal(user(1).state, 'idle');
 });
@@ -268,7 +271,7 @@ test('/settings: bitta o\'zgartirishdan keyin yopiladi; Orqaga ishlaydi; tugmala
   await send(1, 'Suhbatdosh qidirish');
   assert.equal(user(1).step, null);
   assert.equal(user(1).state, 'searching');
-  await send(2, '/search');
+  await send(2, '🔎 Suhbatdosh qidirish');
   await press(1, 'set:gender');
   assert.match(lastEdit().text, /sozlamalarni o'zgartirib bo'lmaydi/);
 });
@@ -283,8 +286,8 @@ test("/help, /profile o'chirilgan; menyuda Profil/Yordam yo'q; suhbat tugaganda 
   assert.deepEqual(kb.map((b) => b.text).filter((t) => /Profil|Yordam/.test(t)), []);
 
   await register(2, 'f', 22);
-  await send(1, '/search');
-  await send(2, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
   await send(1, '/stop');
   const inl = calls.flatMap((c) => c.params?.reply_markup?.inline_keyboard?.flat() || []);
   assert.equal(inl.filter((b) => /^rep:/.test(b.callback_data)).length, 2); // ikkala tomonga
@@ -309,8 +312,8 @@ test('plagin qo\'shish: yadroga tegmasdan yangi buyruq va hodisa', async () => {
   await register(2, 'f', 22);
   await send(1, '/hello');
   assert.equal(lastTo(1), 'hi!');
-  await send(1, '/search');
-  await send(2, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
   assert.equal(seen.length, 1);
 });
 
@@ -353,8 +356,8 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   makePremium(998);
   await send(998, '/vip');          // tarif tugmalari (⭐)
   await send(998, '/settings');     // ✏️ tugmalari
-  await send(998, '/search');       // ❌ bekor qilish
-  await send(997, '/search');       // ⏭ / ⛔ (suhbat)
+  await send(998, '🔎 Suhbatdosh qidirish');       // ❌ bekor qilish
+  await send(997, '🔎 Suhbatdosh qidirish');       // ⏭ / ⛔ (suhbat)
   await send(998, '/stop');         // ⚠️ shikoyat
   for (let id = 3000; id < 3011; id++) await register(id, 'm', 20);
   await send(998, '/users');        // ➡️ keyingi
@@ -431,7 +434,7 @@ test('rangli tugmalar: menyu va inline tugmalarda style, o\'chirsa yo\'qoladi', 
 
 // ------------------------------------------------------------------ v2
 
-const chatPair = async (a, b) => { await send(a, '/search'); await send(b, '/search'); };
+const chatPair = async (a, b) => { await send(a, '🔎 Suhbatdosh qidirish'); await send(b, '🔎 Suhbatdosh qidirish'); };
 const copies = () => calls.filter((c) => c.method === 'copyMessage').length;
 
 test('spam himoyasi: havola, @username, telefon, kontakt to\'siladi; oddiy matn o\'tadi', async () => {
@@ -471,20 +474,20 @@ test('VIP filtri: viloyat va yosh; ikki tomonlama; oddiy foydalanuvchida ishlama
   await register(2, 'f', 21); await press(2, 'set:region:tsh');   // viloyat mos emas
   await register(3, 'f', 30); await press(3, 'set:region:sam');   // yosh mos emas
   await register(4, 'f', 20); await press(4, 'set:region:sam');   // mos
-  await send(1, '/search');
-  await send(2, '/search');
-  await send(3, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
+  await send(2, '🔎 Suhbatdosh qidirish');
+  await send(3, '🔎 Suhbatdosh qidirish');
   assert.equal(user(1).state, 'searching');
   assert.equal(user(3).partner_id, 2);   // 2 va 3 bir-biri bilan ulandi (filtrsiz)
-  await send(4, '/search');
+  await send(4, '🔎 Suhbatdosh qidirish');
   assert.equal(user(4).partner_id, 1);
 
   // VIP tugasa — filtr e'tiborga olinmaydi.
   raw().prepare('UPDATE users SET premium_until = 0 WHERE id = 1').run();
   await send(1, '/stop');
   await register(5, 'f', 40); await press(5, 'set:region:tsh');
-  await send(5, '/search');
-  await send(1, '/search');
+  await send(5, '🔎 Suhbatdosh qidirish');
+  await send(1, '🔎 Suhbatdosh qidirish');
   assert.equal(user(1).partner_id, 5);
 
   await press(1, 'flt:reset');            // VIP emas — tozalashga ruxsat yo'q
@@ -497,11 +500,11 @@ test('navbat: VIP oldinga o\'tadi, yomon baholi orqaga suriladi', async () => {
   // VIP: 1 (oddiy qiz) avval keldi, 2 (VIP qiz, faqat yigit qidiradi) keyin — bir-biriga mos emas.
   await register(1, 'f', 25);
   await register(2, 'f', 26); makePremium(2);
-  await send(1, '/search');
+  await send(1, '🔎 Suhbatdosh qidirish');
   await send(2, '/boy');
   assert.equal(user(2).state, 'searching');
   await register(3, 'm', 30);
-  await send(3, '/search');                 // ikkalasi ham mos — VIP ustun
+  await send(3, '🔎 Suhbatdosh qidirish');                 // ikkalasi ham mos — VIP ustun
   assert.equal(user(3).partner_id, 2);
 
   await send(1, '/stop');                  // navbatni bo'shatamiz
@@ -541,12 +544,12 @@ test('onlayn soni: standart holatda o\'chiq, showOnline = true bo\'lsa ko\'rinad
   await register(2, 'f', 22);
   await register(3, 'm', 30);
   await chatPair(1, 2);
-  await send(3, '/search');
+  await send(3, '🔎 Suhbatdosh qidirish');
   assert.doesNotMatch(lastTo(3), /Hozir faol|\{online\}/);
   await send(3, '/stop');
   config.showOnline = true;
   try {
-    await send(3, '/search');
+    await send(3, '🔎 Suhbatdosh qidirish');
     assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
     await send(3, 'nimadir');               // qidiruv vaqtida boshqa xabar
     assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
@@ -646,4 +649,13 @@ test('/setcommands: uz va ru buyruqlar ro\'yxati o\'rnatiladi', async () => {
   } finally {
     config.adminIds.pop();
   }
+});
+
+test('/search olib tashlangan: suhbatsiz holatda bosh menyu, qidiruv boshlanmaydi', async () => {
+  await register(1, 'm', 25);
+  await send(1, '/search');
+  assert.equal(user(1).state, 'idle');
+  assert.match(lastTo(1), /Bosh menyu/);
+  await send(1, '/next');                      // o'rniga /next
+  assert.equal(user(1).state, 'searching');
 });

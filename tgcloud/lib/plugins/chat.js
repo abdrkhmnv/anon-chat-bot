@@ -19,7 +19,6 @@ export default {
       return res;
     }
 
-    bot.command('search', (ctx) => doSearch(ctx, 'any'));
     bot.hears('btn.search', (ctx) => doSearch(ctx, 'any'));
     bot.command(['girl', 'girls'], (ctx) => doSearch(ctx, 'f'));
     bot.hears('btn.search_f', (ctx) => doSearch(ctx, 'f'));
@@ -49,6 +48,8 @@ export default {
     // shuning uchun chat plagini ro'yxatda pastroqda turadi.
     bot.on('message', async (ctx, nextFn) => {
       if (ctx.user?.state === 'chatting' && ctx.user.partner_id) {
+        // Noma'lum buyruq (masalan eski /search) sherikka uzatilmaydi.
+        if (ctx.text.startsWith('/')) return ctx.reply(ctx.t('chat.unknown_command'));
         return match.relay(ctx);
       }
       return nextFn();

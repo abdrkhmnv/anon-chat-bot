@@ -74,7 +74,8 @@ export default {
   'chat.ended_by_partner': '⛔️ Muloqotchi siz bilan muloqotni uzdi, yangi muloqotchini izlash uchun 👉 /next',
   'chat.ended_idle': '⏱ {min} daqiqa hech kim yozmagani uchun suhbat yopildi.',
   'chat.partner_unavailable': '⛔ Suhbatdosh botni bloklagani uchun suhbat tugadi.',
-  'chat.after': 'Yangi suhbatdosh topish uchun /search bosing.',
+  'chat.after': 'Yangi suhbatdosh topish uchun /next bosing.',
+  'chat.unknown_command': '❓ Bunday buyruq yo\'q. Suhbatni yakunlash uchun 👉 /stop ni bosing.',
   'chat.cant_copy': '❗ Bu turdagi xabarni yuborib bo\'lmaydi.',
   'chat.blocked_contact': '🚫 Havola, @username va telefon raqam yuborib bo\'lmaydi. Xabaringiz yetkazilmadi.',
   'search.premium_tip': '💡 VIP bilan qiz yoki yigitni tanlab qidirishingiz mumkin: /vip',
@@ -141,8 +142,7 @@ export default {
 
   // "/" menyusidagi buyruqlar (admin: /setcommands)
   'bot.commands':
-    'search - Suhbatdosh qidirish\n'
-    + 'next - Keyingi suhbatdosh\n'
+    'next - Suhbatdosh qidirish\n'
     + 'stop - Suhbatni tugatish\n'
     + 'girl - Qiz qidirish (VIP)\n'
     + 'boy - Yigit qidirish (VIP)\n'
