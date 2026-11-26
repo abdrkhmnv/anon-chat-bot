@@ -1,23 +1,18 @@
 // plugins/settings.js — /settings: jins va yoshni ko'rish va o'zgartirish.
 
 import { config } from '../config.js';
-import { usersRepo, isPremium } from '../repo/users.js';
-import { inline, btn, menuFor, BLUE } from '../core/keyboards.js';
-import { formatDate } from '../services/premium.js';
+import { usersRepo } from '../repo/users.js';
+import { inline, btn, menuFor } from '../core/keyboards.js';
 import { genderKeyboard, parseAge } from './registration.js';
 
 export default {
   name: 'settings',
   setup(bot) {
     function show(ctx) {
-      const u = ctx.user;
-      const plan = isPremium(u)
-        ? ctx.t('settings.plan_premium', { until: formatDate(u.premium_until) })
-        : ctx.t('settings.plan_free');
-      return ctx.reply(ctx.t('settings.text', { gender: ctx.t(`gender.${u.gender}`), age: u.age, plan }), {
+      return ctx.reply(ctx.t('settings.text'), {
         reply_markup: inline([
-          [btn(ctx.t('settings.btn_gender'), 'set:gender', BLUE)],
-          [btn(ctx.t('settings.btn_age'), 'set:age', BLUE)],
+          [btn(ctx.t('settings.btn_gender'), 'set:gender')],
+          [btn(ctx.t('settings.btn_age'), 'set:age')],
         ]),
       });
     }

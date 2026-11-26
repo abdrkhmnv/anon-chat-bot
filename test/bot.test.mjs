@@ -206,9 +206,11 @@ test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, as
 test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', async () => {
   await register(1, 'm', 25);
   await send(1, '/settings');
-  assert.match(lastTo(1), /Sozlamalar/);
-  assert.match(lastTo(1), /Jins: Yigit/);
-  assert.match(lastTo(1), /Yosh: 25/);
+  assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
+  const kb = calls.at(-1).params.reply_markup.inline_keyboard;
+  assert.deepEqual(kb.map((r) => r.map((b) => [b.text, b.callback_data, b.style])),
+    [[['Jinsimni 👩', 'set:gender', undefined]], [['Yoshimni', 'set:age', undefined]]]);
+  assert.ok(kb[0][0].icon_custom_emoji_id && kb[1][0].icon_custom_emoji_id);
 
   await press(1, 'set:gender');
   await press(1, 'set:gender:f');
@@ -220,7 +222,7 @@ test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', asyn
   assert.match(lastTo(1), /18 dan 99 gacha/);
   await send(1, '30');
   assert.equal(user(1).age, 30);
-  assert.match(lastTo(1), /Yosh: 30/);
+  assert.equal(lastTo(1), "Qaysi sozlamani o'zgartirasiz:");
 
   await register(2, 'm', 20);
   await send(1, '/search');
@@ -321,7 +323,7 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   assert.ok(withEmoji.length >= 15, `tugmalar soni: ${withEmoji.length}`);
   for (const b of withEmoji) {
     assert.ok(ids.has(b.icon_custom_emoji_id), `ikonka yo'q: ${JSON.stringify(b)}`);
-    assert.doesNotMatch(b.text, emojiRe, `matnda emoji qoldi: ${b.text}`);
+    assert.doesNotMatch(b.text, new RegExp('^' + emojiRe.source, 'u'), `matn boshida emoji qoldi: ${b.text}`);
   }
   config.adminIds.pop();
 });
@@ -339,7 +341,7 @@ test('premium emoji: emojisiz va eski (emojili) tugma matnlari ham ishlaydi', as
   await send(1, 'Suhbatni tugatish');
   assert.equal(user(1).state, 'idle');
   await send(1, '/settings');
-  assert.match(lastTo(1), /Sozlamalar/);
+  assert.match(lastTo(1), /Qaysi sozlamani/);
 });
 
 test('premium emoji: config.premiumEmojiButtons = false bo\'lsa oddiy emojilar qoladi', async () => {

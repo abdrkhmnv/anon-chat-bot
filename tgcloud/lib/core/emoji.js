@@ -21,6 +21,7 @@ export const BUTTON_EMOJI = {
   '❌': '5465665476971471368',  // qizil X
   '⚠️': '5467928559664242360', // ❗ qizil undov belgisi (shikoyat)
   '✏️': '5334673106202010226', // qalam
+  '📅': '5431897022456145283', // kalendar
   '✅': '5427009714745517609',  // yashil belgi
   '⬅️': '5469735272017043817', // 👈 chapni ko'rsatuvchi qo'l
   '➡️': '5471978009449731768', // 👉 o'ngni ko'rsatuvchi qo'l
@@ -35,9 +36,14 @@ const KEYS = [...LOOKUP.keys()].sort((a, b) => b.length - a.length);
 /** Matn boshidagi yoki oxiridagi tanish emojini topadi: { id, rest } yoki null. */
 function split(text) {
   const s = String(text ?? '');
+  // Avval boshidagi emoji (ikonka matndan oldin turadi), keyin oxiridagi.
   for (const k of KEYS) {
     for (const e of [k + VS16, k]) {
       if (s.startsWith(e + ' ')) return { id: LOOKUP.get(k), rest: s.slice(e.length + 1).trim() };
+    }
+  }
+  for (const k of KEYS) {
+    for (const e of [k + VS16, k]) {
       if (s.endsWith(' ' + e)) return { id: LOOKUP.get(k), rest: s.slice(0, -(e.length + 1)).trim() };
     }
   }

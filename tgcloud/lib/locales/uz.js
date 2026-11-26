@@ -54,11 +54,9 @@ export default {
   'search.premium_tip': '💡 VIP bilan qiz yoki yigitni tanlab qidirishingiz mumkin: /vip',
 
   // sozlamalar (/settings)
-  'settings.text': '⚙️ <b>Sozlamalar</b>\n\nJins: {gender}\nYosh: {age}\nTarif: {plan}\n\nO\'zgartirish uchun tugmani bosing:',
-  'settings.plan_free': 'Oddiy',
-  'settings.plan_premium': '💎 VIP ({until} gacha)',
-  'settings.btn_age': '✏️ Yoshni o\'zgartirish',
-  'settings.btn_gender': '✏️ Jinsni o\'zgartirish',
+  'settings.text': 'Qaysi sozlamani o\'zgartirasiz:',
+  'settings.btn_gender': '👨 Jinsimni 👩',
+  'settings.btn_age': '📅 Yoshimni',
   'settings.busy': 'Suhbat yoki qidiruv vaqtida sozlamalarni o\'zgartirib bo\'lmaydi.',
   'settings.saved': '✅ Saqlandi.',
 
