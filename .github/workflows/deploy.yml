@@ -8,11 +8,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      migrate:
-        description: "Bazaga xavfsiz migratsiyalarni ham qo'llash (tgcloud migrate --safe)"
-        type: boolean
-        default: false
 
 # Bir vaqtda faqat bitta deploy ishlaydi; yangisi kelsa navbatda kutadi.
 concurrency:
@@ -56,8 +51,9 @@ jobs:
       - name: Deploy (tgcloud push)
         run: npx tgcloud push --force
 
-      - name: Migratsiya (faqat qo'lda tanlansa)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.migrate }}
+      # Yangi ustun/jadvallar (xavfsiz o'zgarishlar) avtomatik qo'llanadi.
+      # O'chirish kabi xavfli o'zgarishlar --safe bilan qo'llanmaydi — ularni qo'lda qiling.
+      - name: Migratsiya (xavfsiz o'zgarishlar)
         run: npx tgcloud migrate --safe
 
       - name: Webhook tekshiruvi

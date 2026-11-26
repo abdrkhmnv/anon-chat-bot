@@ -9,7 +9,7 @@
 // Yangi funksiya (plagin) o'z jadvaliga muhtoj bo'lsa — shu faylga yangi jadval
 // qo'shiladi, mavjudlariga tegilmaydi.
 
-import { table, integer, text, index } from 'sdk/db';
+import { table, integer, text, index, uniqueIndex } from 'sdk/db';
 
 // Foydalanuvchilar. `id` = Telegram user id.
 export const users = table('users', {
@@ -30,6 +30,15 @@ export const users = table('users', {
   chatsCount:   integer('chats_count').notNull().default(0),
   createdAt:    integer('created_at').notNull().default(0),
   lastSeenAt:   integer('last_seen_at').notNull().default(0),
+  // --- v2: viloyat, VIP filtrlari, baho, referal ---
+  region:       text('region'),                       // viloyat kodi ('tsh', 'sam', ...) yoki null
+  wantRegion:   text('want_region'),                  // VIP: faqat shu viloyatdan qidirish
+  ageMin:       integer('age_min'),                   // VIP: yosh oralig'i
+  ageMax:       integer('age_max'),
+  likes:        integer('likes').notNull().default(0),
+  dislikes:     integer('dislikes').notNull().default(0),
+  referredBy:   integer('referred_by'),               // kim taklif qilgan
+  referrals:    integer('referrals').notNull().default(0), // nechta do'st ro'yxatdan o'tgan
 }, (t) => ({
   stateIdx:   index('idx_users_state').on(t.state),
   premiumIdx: index('idx_users_premium').on(t.premiumUntil),
@@ -44,6 +53,12 @@ export const queue = table('queue', {
   wantGender: text('want_gender').notNull().default('any'),
   premium:    integer('premium').notNull().default(0),
   createdAt:  integer('created_at').notNull(),           // unix MILLIsekund
+  // --- v2 ---
+  region:     text('region'),
+  wantRegion: text('want_region'),
+  ageMin:     integer('age_min'),
+  ageMax:     integer('age_max'),
+  penalty:    integer('penalty').notNull().default(0),   // 1 = yomon baho, navbatda kechroq
 }, (t) => ({
   // Navbatdan qidirish shu indekslar orqali tez ishlaydi.
   genderIdx:  index('idx_queue_gender_created').on(t.gender, t.createdAt),
@@ -59,9 +74,23 @@ export const chats = table('chats', {
   endedAt:   integer('ended_at'),
   endedBy:   integer('ended_by'),
   messages:  integer('messages').notNull().default(0),
+  lastMsgAt: integer('last_msg_at'),                   // v2: oxirgi xabar vaqti (jimlikda yopish)
 }, (t) => ({
   userAIdx: index('idx_chats_user_a').on(t.userA),
   userBIdx: index('idx_chats_user_b').on(t.userB),
+  openIdx:  index('idx_chats_open').on(t.endedAt, t.lastMsgAt),
+}));
+
+// v2: suhbatdan keyingi baholar (👍/👎). Bir suhbatga bir kishi bir marta baho beradi.
+export const ratings = table('ratings', {
+  id:        integer('id').primaryKey({ autoIncrement: true }),
+  chatId:    integer('chat_id').notNull(),
+  raterId:   integer('rater_id').notNull(),
+  targetId:  integer('target_id').notNull(),
+  value:     integer('value').notNull(),               // 1 = 👍, -1 = 👎
+  createdAt: integer('created_at').notNull(),
+}, (t) => ({
+  pairIdx: uniqueIndex('uidx_ratings_pair').on(t.raterId, t.chatId),
 }));
 
 // Telegram Stars to'lovlari. charge_id unikal — bitta to'lov ikki marta hisoblanmaydi.
