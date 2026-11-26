@@ -184,23 +184,47 @@ test("Stars to'lovi: tekshiruv, faollashtirish, takroriy update", async () => {
   config.adminIds.pop();
 });
 
-test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, async () => {
-  await register(1, 'f', 22);
-  for (let i = 0; i < config.autoBanReports; i++) {
-    const r = 10 + i;
-    await register(r, 'm', 25);
-    await send(1, '/search');
-    await send(r, '/search');
-    await send(r, '/stop');
-    const chatId = raw().prepare('SELECT max(id) AS id FROM chats').get().id;
-    await press(r, `repr:${chatId}:abuse`);
-    await press(r, `repr:${chatId}:abuse`); // takroriy — hisoblanmaydi
-  }
-  assert.equal(user(1).reports, config.autoBanReports);
-  assert.equal(user(1).banned, 1);
+test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', async () => {
+  await register(1, 'm', 25);
+  await send(1, '/settings');
+  assert.match(lastTo(1), /Sozlamalar/);
+  assert.match(lastTo(1), /Jins: Yigit/);
+  assert.match(lastTo(1), /Yosh: 25/);
+
+  await press(1, 'set:gender');
+  await press(1, 'set:gender:f');
+  assert.equal(user(1).gender, 'f');
+
+  await press(1, 'set:age');
+  assert.match(lastTo(1), /Yoshingizni yozing/);
+  await send(1, '12');
+  assert.match(lastTo(1), /18 dan 99 gacha/);
+  await send(1, '30');
+  assert.equal(user(1).age, 30);
+  assert.match(lastTo(1), /Yosh: 30/);
+
+  await register(2, 'm', 20);
   await send(1, '/search');
-  assert.match(lastTo(1), /bloklangansiz/);
-  assert.equal(user(1).state, 'idle');
+  await send(2, '/search');
+  await press(1, 'set:age');
+  assert.match(lastTo(1), /sozlamalarni o'zgartirib bo'lmaydi/);
+});
+
+test("/help, /profile, /report o'chirilgan; menyuda Profil/Yordam yo'q; suhbat tugaganda shikoyat tugmasi yo'q", async () => {
+  await register(1, 'm', 25);
+  for (const cmd of ['/help', '/profile', '/report', 'Profil', 'ℹ️ Yordam']) {
+    await send(1, cmd);
+    assert.match(lastTo(1), /Bosh menyu/, cmd);
+  }
+  const kb = calls.filter((c) => c.params?.reply_markup?.keyboard).at(-1).params.reply_markup.keyboard.flat();
+  assert.deepEqual(kb.map((b) => b.text).filter((t) => /Profil|Yordam/.test(t)), []);
+
+  await register(2, 'f', 22);
+  await send(1, '/search');
+  await send(2, '/search');
+  await send(1, '/stop');
+  const inl = calls.flatMap((c) => c.params?.reply_markup?.inline_keyboard?.flat() || []);
+  assert.equal(inl.filter((b) => /^rep/.test(b.callback_data)).length, 0);
 });
 
 test('plagin qo\'shish: yadroga tegmasdan yangi buyruq va hodisa', async () => {
@@ -263,10 +287,10 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   await register(997, 'f', 25);
   makePremium(998);
   await send(998, '/vip');          // tarif tugmalari (⭐)
-  await send(998, '/profile');      // ✏️ tugmalari
+  await send(998, '/settings');     // ✏️ tugmalari
   await send(998, '/search');       // ❌ bekor qilish
   await send(997, '/search');       // ⏭ / ⛔ (suhbat)
-  await send(998, '/stop');         // ⚠️ shikoyat
+  await send(998, '/stop');
   for (let id = 3000; id < 3011; id++) await register(id, 'm', 20);
   await send(998, '/users');        // ➡️ keyingi
   await press(998, 'adminusers:2'); // ⬅️ oldingi
@@ -293,8 +317,8 @@ test('premium emoji: emojisiz va eski (emojili) tugma matnlari ham ishlaydi', as
   assert.equal(user(1).state, 'chatting');
   await send(1, 'Suhbatni tugatish');
   assert.equal(user(1).state, 'idle');
-  await send(1, 'Profil');
-  assert.match(lastTo(1), /Profilingiz/);
+  await send(1, '/settings');
+  assert.match(lastTo(1), /Sozlamalar/);
 });
 
 test('premium emoji: config.premiumEmojiButtons = false bo\'lsa oddiy emojilar qoladi', async () => {

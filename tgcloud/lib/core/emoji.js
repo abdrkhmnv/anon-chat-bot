@@ -16,12 +16,9 @@ export const BUTTON_EMOJI = {
   '👨': '5190498849440931467', // erkak
   '⭐': '5435957248314579621', // yulduz (Stars narxi)
   '💎': '5471952986970267163', // olmos (VIP)
-  '👤': '5373012449597335010', // siluet
-  'ℹ️': '5467666648263564704', // ❓ qizil so'roq belgisi
   '⏭': '5471978009449731768',  // 👉 o'ngni ko'rsatuvchi qo'l
   '⛔': '5472354553527541051',  // ✋ ko'tarilgan kaft (to'xtash)
   '❌': '5465665476971471368',  // qizil X
-  '⚠️': '5467928559664242360', // ❗ qizil undov belgisi
   '✏️': '5334673106202010226', // qalam
   '✅': '5427009714745517609',  // yashil belgi
   '⬅️': '5469735272017043817', // 👈 chapni ko'rsatuvchi qo'l

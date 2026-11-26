@@ -11,7 +11,7 @@ import { config } from '../config.js';
 import { usersRepo, isPremium } from '../repo/users.js';
 import { queueRepo } from '../repo/queue.js';
 import { chatsRepo, otherSide } from '../repo/chats.js';
-import { menuFor, inline, btn, RED } from '../core/keyboards.js';
+import { menuFor } from '../core/keyboards.js';
 import { notify, tr } from './notify.js';
 
 const PURGE_PROBABILITY = 0.02; // cron yo'q — eskirgan navbatni vaqti-vaqti bilan tozalaymiz
@@ -83,16 +83,15 @@ export function createMatchmaking(bot) {
     const users = await Promise.all(ids.map((id) => usersRepo.get(id)));
     await Promise.all(users.map((u) => {
       if (!u || u.id === silentFor) return null;
-      const reportKb = { reply_markup: inline([[btn(tr(u, 'btn.report'), `rep:${chat.id}`, RED)]]) };
       if (reason === 'unavailable') {
         if (u.id === by) return null; // botni bloklagan odamga yubora olmaymiz
         return notify(u, 'chat.partner_unavailable', null, { reply_markup: menuFor(u, 'idle') });
       }
       if (u.id === by) {
-        return notify(u, 'chat.ended_by_you', null, reportKb)
+        return notify(u, 'chat.ended_by_you')
           .then(() => notify(u, 'chat.after', null, { reply_markup: menuFor(u, 'idle') }));
       }
-      return notify(u, 'chat.ended_by_partner', null, reportKb)
+      return notify(u, 'chat.ended_by_partner')
         .then(() => notify(u, 'chat.after', null, { reply_markup: menuFor(u, 'idle') }));
     }));
 

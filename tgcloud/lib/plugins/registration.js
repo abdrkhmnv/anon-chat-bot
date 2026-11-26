@@ -12,7 +12,7 @@ export const genderKeyboard = (ctx, prefix = 'reg:g') => inline([[
 ]]);
 
 // Ro'yxatdan o'tmasdan ham ishlaydigan buyruqlar.
-const ALWAYS_ALLOWED = ['start', 'help', 'terms', 'paysupport'];
+const ALWAYS_ALLOWED = ['start', 'terms', 'paysupport'];
 
 export function isRegistered(user) {
   return !!(user && user.gender && user.age);

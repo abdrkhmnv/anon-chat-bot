@@ -10,10 +10,9 @@
 
 import users from './users.js';
 import registration from './registration.js';
-import help, { fallback } from './help.js';
+import info, { fallback } from './help.js'; // /terms, /paysupport, /menu
 import premium from './premium.js';
-import profile from './profile.js';
-import report from './report.js';
+import settings from './settings.js';
 import admin from './admin.js';
 import broadcast from './broadcast.js';
 import chat from './chat.js';
@@ -21,10 +20,9 @@ import chat from './chat.js';
 export const plugins = [
   users,
   registration,
-  help,
+  info,
   premium,
-  profile,
-  report,
+  settings,
   admin,
   broadcast,
   // ← yangi plaginlar shu yerga

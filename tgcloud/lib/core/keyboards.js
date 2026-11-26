@@ -16,9 +16,7 @@ export const MENU_COLORS = {
   'btn.search': GREEN,    // 🔎 Suhbatdosh qidirish
   'btn.search_f': RED,    // 👩 Qiz qidirish
   'btn.search_m': BLUE,   // 👨 Yigit qidirish
-  'btn.profile': null,    // 👤 Profil — oddiy
   'btn.premium': BLUE,    // 💎 VIP
-  'btn.help': null,       // ℹ️ Yordam — oddiy
   'btn.next': BLUE,       // ⏭ Keyingisi
   'btn.stop': RED,        // ⛔ Suhbatni tugatish
   'btn.cancel': RED,      // ❌ Qidiruvni bekor qilish
@@ -38,7 +36,7 @@ export function menuFor(user, state = user?.state) {
   return kb([
     [b('btn.search')],
     [b('btn.search_f'), b('btn.search_m')],
-    [b('btn.premium'), b('btn.profile'), b('btn.help')],
+    [b('btn.premium')],
   ]);
 }
 
