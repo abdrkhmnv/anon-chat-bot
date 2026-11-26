@@ -1,0 +1,64 @@
+# main branchiga har push bo'lganda: testlar -> tgcloud'ga deploy.
+# Kerakli secret: TGCLOUD_TOKEN (Settings -> Secrets and variables -> Actions).
+# Token — `npx tgcloud login` da kiritgan CLI tokeningiz (@BotFather -> Serverless).
+
+name: Deploy to Telegram Serverless
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      migrate:
+        description: "Bazaga xavfsiz migratsiyalarni ham qo'llash (tgcloud migrate --safe)"
+        type: boolean
+        default: false
+
+# Bir vaqtda faqat bitta deploy ishlaydi; yangisi kelsa navbatda kutadi.
+concurrency:
+  group: tgcloud-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bog'liqliklarni o'rnatish
+        run: npm ci
+
+      - name: Testlar
+        run: npm test
+
+      - name: Token borligini tekshirish
+        run: |
+          if [ -z "$TGCLOUD_TOKEN" ]; then
+            echo "::error::TGCLOUD_TOKEN secret qo'shilmagan (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+
+      - name: tgcloud holat papkasini yaratish
+        run: npx tgcloud init --no-git < /dev/null || true
+
+      - name: Oldingi holat (nima o'zgaradi)
+        run: npx tgcloud status || true
+
+      # GitHub — asosiy manba: CI'da oxirgi revision eslab qolinmaydi, shuning uchun --force.
+      # Diqqat: Termux'dan to'g'ridan-to'g'ri qilingan, lekin GitHub'ga tushmagan o'zgarishlar ustidan yoziladi.
+      - name: Deploy (tgcloud push)
+        run: npx tgcloud push --force
+
+      - name: Migratsiya (faqat qo'lda tanlansa)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.migrate }}
+        run: npx tgcloud migrate --safe
+
+      - name: Webhook tekshiruvi
+        run: npx tgcloud webhook

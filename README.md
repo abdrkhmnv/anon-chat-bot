@@ -88,6 +88,19 @@ terms - Foydalanish shartlari
 paysupport - To'lov bo'yicha yordam
 ```
 
+## GitHub'dan avtomatik deploy
+
+`.github/workflows/deploy.yml` — `main` ga har push bo'lganda testlarni ishga tushiradi va
+kodni `npx tgcloud push --force` bilan Telegram Serverless'ga yuklaydi.
+
+1. Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+   nomi `TGCLOUD_TOKEN`, qiymati — `npx tgcloud login` da kiritgan CLI tokeningiz.
+2. **Actions** bo'limida workflow'ni yoqing; `Deploy to Telegram Serverless` → **Run workflow**
+   bilan qo'lda ham ishga tushirish mumkin (`migrate` belgilansa, `tgcloud migrate --safe` ham bajariladi).
+
+Muhim: endi GitHub asosiy manba. Termux'dan to'g'ridan-to'g'ri `tgcloud push` qilingan, lekin
+GitHub'ga tushmagan o'zgarishlar keyingi avtomatik deploy'da ustidan yoziladi.
+
 ## Tuzilma
 
 ```
