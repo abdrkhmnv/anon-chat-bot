@@ -1,5 +1,5 @@
 // plugins/broadcast.js — ommaviy xabar (faqat adminlar uchun).
-// Xabarga reply qilib: /broadcast [all|premium|free|m|f] → "✅ Yuborish".
+// Xabarga reply qilib: /broadcast [all|vip|free|m|f] → "✅ Yuborish".
 // /bcstatus, /bcpause, /bcresume, /bccancel
 // Cron yo'q: bo'laklarni tasdiqlash handleri va keyin har bir kelgan update yuboradi.
 
@@ -10,12 +10,13 @@ import { inline, btn } from '../core/keyboards.js';
 
 const AUDIENCES = {
   all:     '1 = 1',
-  premium: 'premium_until > :ts',
+  vip:     'premium_until > :ts',
+  premium: 'premium_until > :ts', // eski nom
   free:    'premium_until <= :ts',
   m:       "gender = 'm'",
   f:       "gender = 'f'",
 };
-const AUDIENCE_TITLES = { all: 'hamma', premium: 'premium', free: 'oddiy', m: 'yigitlar', f: 'qizlar' };
+const AUDIENCE_TITLES = { all: 'hamma', vip: 'VIP', premium: 'VIP', free: 'oddiy', m: 'yigitlar', f: 'qizlar' };
 const audienceSql = (a) => `banned = 0 AND ${AUDIENCES[a] || AUDIENCES.all}`;
 
 const sleep = (ms) => (typeof setTimeout === 'function'
@@ -166,10 +167,10 @@ export default {
       const src = ctx.message.reply_to_message;
       if (!src) {
         return ctx.reply('Xabaringizni botga yuboring, so\'ng unga reply qilib <code>/broadcast</code> yozing.\n'
-          + 'Filtrlar: <code>all</code>, <code>premium</code>, <code>free</code>, <code>m</code>, <code>f</code>');
+          + 'Filtrlar: <code>all</code>, <code>vip</code>, <code>free</code>, <code>m</code>, <code>f</code>');
       }
       const audience = (ctx.args[0] || 'all').toLowerCase();
-      if (!AUDIENCES[audience]) return ctx.reply('Noma\'lum filtr. Mumkin: all, premium, free, m, f');
+      if (!AUDIENCES[audience]) return ctx.reply('Noma\'lum filtr. Mumkin: all, vip, free, m, f');
       const running = await repo.active();
       if (running) return ctx.reply(`Avval joriy broadcastni tugating:\n${statusText(running)}`);
 

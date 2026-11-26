@@ -1,7 +1,7 @@
 // plugins/admin.js — administrator buyruqlari (config.adminIds dagilar uchun).
 //   /stats                — statistika
 //   /ban <id>, /unban <id>
-//   /grant <id> <kun>     — qo'lda premium
+//   /grant <id> <kun>     — qo'lda VIP
 //   /refund <charge_id>   — Stars to'lovini qaytarish
 //   /user <id>            — foydalanuvchi ma'lumoti
 //   /users [sahifa]       — barcha foydalanuvchilar (10 tadan)
@@ -38,7 +38,7 @@ export default {
       return ctx.reply(pre(
         `Foydalanuvchilar: ${u.total} (👨 ${u.males ?? 0} / 👩 ${u.females ?? 0})\n`
         + `DAU: ${u.dau ?? 0}   MAU: ${u.mau ?? 0}\n`
-        + `Premium: ${u.premium ?? 0}\n`
+        + `VIP: ${u.premium ?? 0}\n`
         + `Navbatda: ${q.total} (👨 ${q.males ?? 0} / 👩 ${q.females ?? 0})\n`
         + `Faol suhbatlar: ${c.active ?? 0}   Bugun: ${c.today ?? 0}   Jami: ${c.total}\n`
         + `To'lovlar: ${p.total}   ⭐ jami: ${p.stars}   ⭐ 30 kun: ${p.stars30}`,
@@ -86,7 +86,7 @@ export default {
         const username = u.username ? `@${esc(u.username)}` : 'username yo\'q';
         const gender = u.gender === 'm' ? '👨' : u.gender === 'f' ? '👩' : '—';
         const state = u.banned ? '🚫 bloklangan' : u.state === 'chatting' ? '💬 suhbatda' : u.state === 'searching' ? '🔎 qidirmoqda' : '🟢 faol';
-        const premium = Number(u.premium_until) > Math.floor(Date.now() / 1000) ? ' ⭐ Premium' : '';
+        const premium = Number(u.premium_until) > Math.floor(Date.now() / 1000) ? ' 💎 VIP' : '';
         return `${(page - 1) * USERS_PER_PAGE + i + 1}. <b>${name}</b>${premium}\n   ID: <code>${u.id}</code> · ${username}\n   ${gender}${u.age ? ` ${u.age} yosh` : ''} · ${state}`;
       });
       const text = `👥 <b>Foydalanuvchilar</b>\nJami: <b>${total}</b> · Sahifa: <b>${page}/${pages}</b>\n\n${lines.length ? lines.join('\n\n') : 'Hozircha foydalanuvchi yo\'q.'}`;

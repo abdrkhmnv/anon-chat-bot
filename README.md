@@ -7,18 +7,18 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
 
 ## Imkoniyatlar
 
-| | Oddiy (bepul) | ⭐ Premium |
+| | Oddiy (bepul) | 💎 VIP |
 |---|---|---|
 | Tasodifiy suhbatdosh qidirish | ✅ | ✅ |
 | Jins bo'yicha qidirish (`/girl`, `/boy`) | ❌ | ✅ |
 | Suhbatdoshning jinsi va yoshini ko'rish | ❌ | ✅ |
 
-- Premium tariflari: **3 kun, 1 hafta, 1 oy, 3 oy, 6 oy, 12 oy**. To'lov **Telegram Stars (XTR)** bilan.
+- VIP tariflari: **3 kun, 1 hafta, 1 oy, 3 oy, 6 oy, 12 oy**. To'lov **Telegram Stars (XTR)** bilan.
   Yangi xarid amaldagi muddat ustiga qo'shiladi.
 - Ro'yxatdan o'tishda hamma jins va yoshini kiritadi. Bepul foydalanuvchilar ham kiritadi,
-  aks holda premium foydalanuvchi "qiz qidirish"ni bosganda navbatdan kimni tanlashni bilib bo'lmaydi.
-- Filtr ikki tomonga ishlaydi. Premium yigit qiz qidirsa, unga faqat jinsi "qiz" deb
-  ro'yxatdan o'tganlar ulanadi. Premium qiz yigit qidirayotgan bo'lsa, unga qiz ulanmaydi.
+  aks holda VIP foydalanuvchi "qiz qidirish"ni bosganda navbatdan kimni tanlashni bilib bo'lmaydi.
+- Filtr ikki tomonga ishlaydi. VIP yigit qiz qidirsa, unga faqat jinsi "qiz" deb
+  ro'yxatdan o'tganlar ulanadi. VIP qiz yigit qidirayotgan bo'lsa, unga qiz ulanmaydi.
 - Xabarlar `copyMessage` orqali uzatiladi, shuning uchun ism, username va "forwarded" belgisi ko'rinmaydi.
   Matn, rasm, video, ovozli xabar, stiker va boshqa turlar ishlaydi.
 - Bundan tashqari: `/next`, `/stop`, profil, shikoyat va avtomatik ban, admin buyruqlari
@@ -33,7 +33,7 @@ Quyidagi buyruqlar faqat `tgcloud/lib/config.js` dagi `adminIds` ro'yxatiga kiri
 - `/users` yoki `/users 2` — foydalanuvchilar ro'yxati, 10 tadan sahifalab; har bir foydalanuvchining Telegram ID'si ko'rsatiladi. Sahifalar inline tugmalar bilan almashadi.
 - `/user <id>` — bitta foydalanuvchi va oxirgi to'lovlari.
 - `/ban <id>` va `/unban <id>` — bloklash / blokdan chiqarish.
-- `/grant <id> <kun>` — Premium muddatini qo'lda uzaytirish.
+- `/grant <id> <kun>` — VIP muddatini qo'lda uzaytirish.
 - `/refund <charge_id>` — Telegram Stars to'lovini qaytarish.
 
 `/users` ro'yxati bazadagi `users` jadvalidan olinadi; foydalanuvchilar botga kamida bir marta yozgan bo'lishi kerak.
@@ -78,9 +78,9 @@ npm test
 search - Suhbatdosh qidirish
 next - Keyingi suhbatdosh
 stop - Suhbatni tugatish
-girl - Qiz qidirish (Premium)
-boy - Yigit qidirish (Premium)
-premium - Premium tariflar
+girl - Qiz qidirish (VIP)
+boy - Yigit qidirish (VIP)
+vip - VIP tariflar
 profile - Profil
 report - Shikoyat qilish
 help - Yordam
@@ -188,7 +188,7 @@ Yangi til qo'shish uchun `lib/locales/ru.js` yarating va uni `lib/core/i18n.js` 
   `last_seen_at` 5 daqiqada bir marta yangilanadi.
 - Navbatda qidiruv indekslar orqali ishlaydi (`gender, created_at`).
 - `/stop` ikki marta yoki ikkala tomondan bir vaqtda bosilsa ham suhbat bir marta yopiladi.
-- Takroriy `successful_payment` premiumni ikki marta bermaydi, chunki `charge_id` unikal.
+- Takroriy `successful_payment` VIP'ni ikki marta bermaydi, chunki `charge_id` unikal.
 - Sherik botni bloklagan bo'lsa (403), suhbat avtomatik yopiladi. Telegram 429 qaytarsa, bir marta kutib qayta uriniladi.
 - Platformada cron yo'q, shuning uchun 30 daqiqadan eski navbat yozuvlari qidiruv paytida
   tasodifiy (2%) tozalanadi va tanlovga kirmaydi.

@@ -1,4 +1,5 @@
-// plugins/premium.js — /premium, tarif tanlash, Stars to'lovi.
+// plugins/premium.js — /vip (VIP tariflar), tarif tanlash, Stars to'lovi.
+// Ichki nomlar (premium.*, premium_until) eski holicha; foydalanuvchiga hammasi "VIP" deb ko'rinadi.
 
 import { config } from '../config.js';
 import { isPremium } from '../repo/users.js';
@@ -32,8 +33,10 @@ export default {
     }
     bot.service('premiumUi', { offer });
 
-    bot.command(['premium', 'vip'], (ctx) => offer(ctx));
+    bot.command(['vip', 'premium'], (ctx) => offer(ctx)); // /premium — eski foydalanuvchilar uchun yashirin alias
     bot.hears('btn.premium', (ctx) => offer(ctx));
+    // Foydalanuvchida qolgan eski klaviatura tugmasi
+    bot.hears((text) => text === '⭐ Premium' || text === 'Premium', (ctx) => offer(ctx));
 
     bot.action('buy', async (ctx) => {
       await ctx.answer();

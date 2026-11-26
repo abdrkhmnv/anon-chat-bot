@@ -63,7 +63,7 @@ test('ikki oddiy foydalanuvchi ulanadi; jins/yosh ko\'rinmaydi; xabar anonim uza
   assert.equal(user(1).state, 'chatting');
   assert.equal(user(1).partner_id, 2);
   assert.equal(user(2).partner_id, 1);
-  assert.match(lastTo(1), /Suhbatdosh topildi/);
+  assert.match(lastTo(1), /Muloqotchi topildi/);
   assert.doesNotMatch(lastTo(1), /yosh/);
   assert.doesNotMatch(lastTo(2), /Yigit|yosh/);
 
@@ -76,7 +76,7 @@ test('oddiy foydalanuvchi jins bo\'yicha qidira olmaydi', async () => {
   await register(1, 'm', 25);
   await send(1, '/girl');
   assert.equal(user(1).state, 'idle');
-  assert.ok(textsTo(1).some((t) => /faqat <b>Premium<\/b>/.test(t)));
+  assert.ok(textsTo(1).some((t) => /faqat <b>VIP<\/b>/.test(t)));
   assert.ok(calls.some((c) => c.params.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data === 'buy:d3'));
 });
 
@@ -113,7 +113,7 @@ test('/stop: ikkala tomon ham bo\'shaydi; takroriy /stop xavfsiz; /next yangi qi
   await send(1, '/next');
   assert.equal(user(1).state, 'searching');
   assert.equal(user(2).state, 'idle');
-  assert.match(textsTo(2).join('\n'), /Suhbatdosh suhbatni tugatdi/);
+  assert.match(textsTo(2).join('\n'), /Muloqotchi siz bilan muloqotni uzdi/);
 });
 
 test('sherik botni bloklagan bo\'lsa suhbat yopiladi', async () => {
@@ -262,7 +262,7 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   await register(998, 'm', 30);   // jins tugmalari + bosh menyu
   await register(997, 'f', 25);
   makePremium(998);
-  await send(998, '/premium');      // tarif tugmalari (⭐)
+  await send(998, '/vip');          // tarif tugmalari (⭐)
   await send(998, '/profile');      // ✏️ tugmalari
   await send(998, '/search');       // ❌ bekor qilish
   await send(997, '/search');       // ⏭ / ⛔ (suhbat)
@@ -307,4 +307,14 @@ test('premium emoji: config.premiumEmojiButtons = false bo\'lsa oddiy emojilar q
   } finally {
     config.premiumEmojiButtons = true;
   }
+});
+
+test("VIP: /vip, /premium va eski '⭐ Premium' tugmasi tariflarni ochadi; matnda Premium yo'q", async () => {
+  await register(1, 'm', 25);
+  for (const msg of ['/vip', '/premium', '⭐ Premium', 'VIP', '💎 VIP']) {
+    await send(1, msg);
+    assert.match(lastTo(1), /💎 <b>VIP<\/b>/, msg);
+  }
+  const { default: uz } = await import('../tgcloud/lib/locales/uz.js');
+  for (const [k, v] of Object.entries(uz)) assert.doesNotMatch(v, /premium/i, k);
 });

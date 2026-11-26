@@ -11,7 +11,7 @@ export default {
   'btn.search': '🔎 Suhbatdosh qidirish',
   'btn.search_f': '👩 Qiz bola qidirish',
   'btn.search_m': '👨 O\'g\'il bola qidirish',
-  'btn.premium': '⭐ Premium',
+  'btn.premium': '💎 VIP',
   'btn.profile': '👤 Profil',
   'btn.help': 'ℹ️ Yordam',
   'btn.next': '⏭ Keyingisi',
@@ -33,9 +33,9 @@ export default {
     + '🔎 /search — tasodifiy suhbatdosh topish\n'
     + '⏭ /next — joriy suhbatni tugatib, yangisini qidirish\n'
     + '⛔ /stop — suhbatni yoki qidiruvni to\'xtatish\n'
-    + '👩 /girl, 👨 /boy — jins bo\'yicha qidirish (⭐ Premium)\n'
+    + '👩 /girl, 👨 /boy — jins bo\'yicha qidirish (💎 VIP)\n'
     + '👤 /profile — profilingiz\n'
-    + '⭐ /premium — Premium tariflar\n'
+    + '💎 /vip — VIP tariflar\n'
     + '⚠️ /report — oxirgi suhbatdoshdan shikoyat\n'
     + '📄 /terms — foydalanish shartlari\n'
     + '💳 /paysupport — to\'lov bo\'yicha yordam\n\n'
@@ -44,8 +44,8 @@ export default {
     '<b>Foydalanish shartlari</b>\n\n'
     + '1. Bot faqat {minAge} yoshdan katta foydalanuvchilar uchun.\n'
     + '2. Haqorat, tahdid, spam, reklama, noqonuniy kontent taqiqlanadi.\n'
-    + '3. Qoidabuzarlar ogohlantirishsiz bloklanadi; bloklanganda Premium qaytarilmaydi.\n'
-    + '4. Premium — raqamli xizmat, Telegram Stars orqali to\'lanadi va tanlangan muddat davomida amal qiladi.\n'
+    + '3. Qoidabuzarlar ogohlantirishsiz bloklanadi; bloklanganda VIP qaytarilmaydi.\n'
+    + '4. VIP — raqamli xizmat, Telegram Stars orqali to\'lanadi va tanlangan muddat davomida amal qiladi.\n'
     + '5. To\'lov muammolari bo\'yicha: /paysupport.',
   'paysupport.text':
     '💳 <b>To\'lov bo\'yicha yordam</b>\n\nTo\'lov bilan bog\'liq muammo bo\'lsa, {support} ga yozing va quyidagi ma\'lumotni yuboring:\n<code>ID: {id}</code>\n\nE\'tibor bering: Telegram qo\'llab-quvvatlash xizmati bu botdagi xaridlar bo\'yicha yordam bera olmaydi.',
@@ -57,29 +57,29 @@ export default {
   'search.already_chatting': '💬 Siz hozir suhbatdasiz. Avval /stop yoki /next bosing.',
   'search.cancelled': '❌ Qidiruv bekor qilindi.',
   'search.not_searching': 'Siz hozir qidiruvda ham, suhbatda ham emassiz.',
-  'search.premium_only': '⭐ Jins bo\'yicha qidirish faqat <b>Premium</b> foydalanuvchilar uchun.\n\nPremium bilan:\n• qiz yoki yigitni tanlab qidirasiz\n• suhbatdoshning jinsi va yoshini ko\'rasiz',
-  'chat.found': '✅ <b>Suhbatdosh topildi!</b>\nSalom bering 👋\n\n/next — keyingisi, /stop — tugatish',
-  'chat.found_premium': '✅ <b>Suhbatdosh topildi!</b>\n{gender}, {age} yosh\nSalom bering 👋\n\n/next — keyingisi, /stop — tugatish',
+  'search.premium_only': '💎 Jins bo\'yicha qidirish faqat <b>VIP</b> foydalanuvchilar uchun.\n\nVIP bilan:\n• qiz yoki yigitni tanlab qidirasiz\n• suhbatdoshning jinsi va yoshini ko\'rasiz',
+  'chat.found': 'Muloqotchi topildi 🦄\n\n/next — Boshqa muloqotchini izlash\n/stop — Muloqotni to\'xtatish\n/vip — Jinsini aniqlash💎',
+  'chat.found_premium': 'Muloqotchi topildi 🦄\n💎 {gender}, {age} yosh\n\n/next — Boshqa muloqotchini izlash\n/stop — Muloqotni to\'xtatish',
   'chat.ended_by_you': '⛔ Suhbat tugatildi.',
-  'chat.ended_by_partner': '⛔ Suhbatdosh suhbatni tugatdi.',
+  'chat.ended_by_partner': '⛔️ Muloqotchi siz bilan muloqotni uzdi, yangi muloqotchini izlash uchun 👉 /next',
   'chat.partner_unavailable': '⛔ Suhbatdosh botni bloklagani uchun suhbat tugadi.',
   'chat.after': 'Yangi suhbatdosh topish uchun /search bosing.',
   'chat.cant_copy': '❗ Bu turdagi xabarni yuborib bo\'lmaydi.',
-  'search.premium_tip': '💡 Premium bilan qiz yoki yigitni tanlab qidirishingiz mumkin: /premium',
+  'search.premium_tip': '💡 VIP bilan qiz yoki yigitni tanlab qidirishingiz mumkin: /vip',
 
   // profil
   'profile.text': '👤 <b>Profilingiz</b>\n\nJins: {gender}\nYosh: {age}\nSuhbatlar soni: {chats}\nTarif: {plan}',
   'profile.plan_free': 'Oddiy',
-  'profile.plan_premium': '⭐ Premium ({until} gacha)',
+  'profile.plan_premium': '💎 VIP ({until} gacha)',
   'profile.btn_age': '✏️ Yoshni o\'zgartirish',
   'profile.btn_gender': '✏️ Jinsni o\'zgartirish',
   'profile.busy': 'Suhbat yoki qidiruv vaqtida profilni o\'zgartirib bo\'lmaydi.',
   'profile.saved': '✅ Saqlandi.',
 
   // premium
-  'premium.text': '⭐ <b>Premium</b>\n\n• 👩👨 Jins bo\'yicha qidirish\n• 🎂 Suhbatdoshning jinsi va yoshini ko\'rish\n\n{status}\n\nTarifni tanlang (to\'lov Telegram Stars ⭐ orqali):',
+  'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Jins bo\'yicha qidirish\n• 🎂 Suhbatdoshning jinsi va yoshini ko\'rish\n\n{status}\n\nTarifni tanlang (to\'lov Telegram Stars ⭐ orqali):',
   'premium.status_free': 'Hozirgi tarif: Oddiy',
-  'premium.status_active': 'Premium faol: <b>{until}</b> gacha. Yangi xarid muddatni uzaytiradi.',
+  'premium.status_active': 'VIP faol: <b>{until}</b> gacha. Yangi xarid muddatni uzaytiradi.',
   'premium.plan_btn': '{title} — {stars} ⭐',
   'plan.d3': '3 kun',
   'plan.w1': '1 hafta',
@@ -87,11 +87,11 @@ export default {
   'plan.m3': '3 oy',
   'plan.m6': '6 oy',
   'plan.m12': '12 oy',
-  'premium.invoice_title': 'Premium — {title}',
+  'premium.invoice_title': 'VIP — {title}',
   'premium.invoice_desc': 'Jins bo\'yicha qidirish va suhbatdosh jinsi/yoshini ko\'rish. Muddat: {title}.',
-  'premium.bad_invoice': 'Bu tarif eskirgan. /premium orqali qaytadan tanlang.',
-  'premium.success': '🎉 <b>Rahmat!</b> Premium faollashtirildi.\nAmal qilish muddati: <b>{until}</b> gacha.',
-  'premium.refunded': '↩️ To\'lovingiz qaytarildi ({stars} ⭐). Premium muddati qisqartirildi.',
+  'premium.bad_invoice': 'Bu tarif eskirgan. /vip orqali qaytadan tanlang.',
+  'premium.success': '🎉 <b>Rahmat!</b> VIP faollashtirildi.\nAmal qilish muddati: <b>{until}</b> gacha.',
+  'premium.refunded': '↩️ To\'lovingiz qaytarildi ({stars} ⭐). VIP muddati qisqartirildi.',
 
   // shikoyat
   'report.ask': 'Shikoyat sababini tanlang:',
