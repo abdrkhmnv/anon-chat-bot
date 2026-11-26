@@ -524,24 +524,37 @@ test('baho: suhbatdan keyin 👍/👎, bir marta, hisob yuritiladi', async () =>
   assert.equal(user(1).likes, 0);
 });
 
-test('onlayn soni qidiruv xabarida ko\'rinadi', async () => {
+test('onlayn soni: standart holatda o\'chiq, showOnline = true bo\'lsa ko\'rinadi', async () => {
   await register(1, 'm', 25);
   await register(2, 'f', 22);
   await register(3, 'm', 30);
   await chatPair(1, 2);
   await send(3, '/search');
-  assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
-  await send(3, 'nimadir');               // qidiruv vaqtida boshqa xabar
-  assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
-  assert.doesNotMatch(lastTo(3), /\{online\}/);
+  assert.doesNotMatch(lastTo(3), /Hozir faol|\{online\}/);
+  await send(3, '/stop');
+  config.showOnline = true;
+  try {
+    await send(3, '/search');
+    assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
+    await send(3, 'nimadir');               // qidiruv vaqtida boshqa xabar
+    assert.match(lastTo(3), /Hozir faol: <b>3<\/b>/);
+  } finally {
+    config.showOnline = false;
+  }
 });
 
-test('jimlik: inactivityMin daqiqa yozilmasa suhbat yopiladi', async () => {
+test('jimlik: standart holatda o\'chiq; inactivityMin > 0 bo\'lsa suhbat yopiladi', async () => {
   await register(1, 'm', 25);
   await register(2, 'f', 22);
   await chatPair(1, 2);
   await send(1, 'salom');
   const chatId = user(1).chat_id;
+  raw().prepare('UPDATE chats SET last_msg_at = unixepoch() - 3600 WHERE id = ?').run(chatId);
+  assert.equal(await bot.services.match.sweepIdle({ force: true }), 0);   // standart: o'chiq (inactivityMin = 0)
+  assert.equal(user(1).state, 'chatting');
+  config.inactivityMin = 10;
+  try {
+  raw().prepare('UPDATE chats SET last_msg_at = unixepoch() WHERE id = ?').run(chatId);
   assert.ok(raw().prepare('SELECT last_msg_at FROM chats WHERE id = ?').get(chatId).last_msg_at > 0);
   assert.equal(await bot.services.match.sweepIdle({ force: true }), 0);   // hali faol
 
@@ -551,6 +564,9 @@ test('jimlik: inactivityMin daqiqa yozilmasa suhbat yopiladi', async () => {
   assert.equal(user(2).state, 'idle');
   assert.ok(textsTo(1).some((t) => /daqiqa hech kim yozmagani/.test(t)));
   assert.ok(textsTo(2).some((t) => /daqiqa hech kim yozmagani/.test(t)));
+  } finally {
+    config.inactivityMin = 0;
+  }
 });
 
 test('referal: 3 do\'st ro\'yxatdan o\'tsa 3 kun VIP; o\'zini taklif qilib bo\'lmaydi', async () => {

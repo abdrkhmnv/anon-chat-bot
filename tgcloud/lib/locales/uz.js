@@ -60,9 +60,10 @@ export default {
     '💳 <b>To\'lov bo\'yicha yordam</b>\n\nTo\'lov bilan bog\'liq muammo bo\'lsa, {support} ga yozing va quyidagi ma\'lumotni yuboring:\n<code>ID: {id}</code>\n\nE\'tibor bering: Telegram qo\'llab-quvvatlash xizmati bu botdagi xaridlar bo\'yicha yordam bera olmaydi.',
 
   // qidiruv / suhbat
-  'search.searching': '🔎 Suhbatdosh qidirilmoqda...\nTopilishi bilan xabar beraman.\n\n🟢 Hozir faol: <b>{online}</b> kishi',
-  'search.searching_f': '🔎 <b>Qiz</b> suhbatdosh qidirilmoqda...\n\n🟢 Hozir faol: <b>{online}</b> kishi',
-  'search.searching_m': '🔎 <b>Yigit</b> suhbatdosh qidirilmoqda...\n\n🟢 Hozir faol: <b>{online}</b> kishi',
+  'search.searching': '🔎 Suhbatdosh qidirilmoqda...\nTopilishi bilan xabar beraman.',
+  'search.searching_f': '🔎 <b>Qiz</b> suhbatdosh qidirilmoqda...',
+  'search.searching_m': '🔎 <b>Yigit</b> suhbatdosh qidirilmoqda...',
+  'search.online': '🟢 Hozir faol: <b>{online}</b> kishi',
   'search.already_chatting': '💬 Siz hozir suhbatdasiz. Avval /stop yoki /next bosing.',
   'search.cancelled': '❌ Qidiruv bekor qilindi.',
   'search.not_searching': 'Siz hozir qidiruvda ham, suhbatda ham emassiz.',

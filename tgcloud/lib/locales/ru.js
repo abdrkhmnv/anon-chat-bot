@@ -60,9 +60,10 @@ export default {
     '💳 <b>Помощь по оплате</b>\n\nЕсли возникла проблема с оплатой, напишите {support} и отправьте эти данные:\n<code>ID: {id}</code>\n\nОбратите внимание: поддержка Telegram не помогает с покупками в этом боте.',
 
   // поиск / диалог
-  'search.searching': '🔎 Ищем собеседника...\nСообщу, как только найду.\n\n🟢 Сейчас активны: <b>{online}</b>',
-  'search.searching_f': '🔎 Ищем <b>девушку</b>...\n\n🟢 Сейчас активны: <b>{online}</b>',
-  'search.searching_m': '🔎 Ищем <b>парня</b>...\n\n🟢 Сейчас активны: <b>{online}</b>',
+  'search.searching': '🔎 Ищем собеседника...\nСообщу, как только найду.',
+  'search.searching_f': '🔎 Ищем <b>девушку</b>...',
+  'search.searching_m': '🔎 Ищем <b>парня</b>...',
+  'search.online': '🟢 Сейчас активны: <b>{online}</b>',
   'search.already_chatting': '💬 Вы сейчас в диалоге. Сначала нажмите /stop или /next.',
   'search.cancelled': '❌ Поиск отменён.',
   'search.not_searching': 'Вы сейчас не в поиске и не в диалоге.',

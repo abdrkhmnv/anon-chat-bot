@@ -3,7 +3,7 @@
 
 import { config } from '../config.js';
 import { menuFor } from '../core/keyboards.js';
-import { usersRepo } from '../repo/users.js';
+import { searchingText } from '../services/matchmaking.js';
 
 export default {
   name: 'info',
@@ -22,8 +22,7 @@ export const fallback = {
   setup(bot) {
     bot.on('message', async (ctx) => {
       if (ctx.user?.state === 'searching') {
-        const online = Math.max(1, await usersRepo.onlineCount());
-        return ctx.reply(ctx.t('search.searching', { online }), { reply_markup: menuFor(ctx.user) });
+        return ctx.reply(await searchingText(ctx.user), { reply_markup: menuFor(ctx.user) });
       }
       return ctx.reply(ctx.t('menu.main'), { reply_markup: menuFor(ctx.user) });
     });

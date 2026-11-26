@@ -33,8 +33,12 @@ export const config = {
   // "Yomon baho": kamida `minVotes` ta 👎 va 👎 soni 👍 dan `ratio` marta ko'p.
   badRating: { minVotes: 5, ratio: 2 },
 
-  // Shuncha daqiqa hech kim yozmasa, suhbat avtomatik yopiladi.
-  inactivityMin: 10,
+  // Shuncha daqiqa hech kim yozmasa, suhbat avtomatik yopiladi. 0 = o'chirilgan.
+  // (Bot kattalashganda yoqing, masalan 10.)
+  inactivityMin: 0,
+
+  // Qidiruv xabarida "🟢 Hozir faol: N kishi" ko'rsatish. (Bot kattalashganda true qiling.)
+  showOnline: false,
 
   // Spam himoyasi: suhbatda havola, @username, telefon raqam, kontaktni to'sish.
   antispam: true,

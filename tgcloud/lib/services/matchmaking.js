@@ -12,10 +12,20 @@ import { usersRepo, isPremium } from '../repo/users.js';
 import { queueRepo } from '../repo/queue.js';
 import { chatsRepo, otherSide } from '../repo/chats.js';
 import { menuFor, inline, btn } from '../core/keyboards.js';
-import { notify, tr } from './notify.js';
+import { notify, tr, sendTo } from './notify.js';
 
 const PURGE_PROBABILITY = 0.02; // cron yo'q — eskirgan navbatni vaqti-vaqti bilan tozalaymiz
 const IDLE_SWEEP_EVERY_MS = 60_000; // jim suhbatlarni tekshirish (har izolyatda daqiqada ko'pi bilan 1 marta)
+
+/** "Qidirilmoqda" matni; config.showOnline bo'lsa — onlayn soni bilan. */
+export async function searchingText(user, key = 'search.searching') {
+  let text = tr(user, key);
+  if (config.showOnline) {
+    const online = Math.max(1, await usersRepo.onlineCount());
+    text += '\n\n' + tr(user, 'search.online', { online });
+  }
+  return text;
+}
 
 /** Yomon baho: kamida minVotes ta 👎 va 👎 soni 👍 dan ratio marta ko'p. */
 export function isBadRated(user) {
@@ -47,8 +57,7 @@ export function createMatchmaking(bot) {
     // "Qidirilmoqda" xabarini navbatga qo'shishdan OLDIN yuboramiz — aks holda
     // juftlik darhol topilsa, xabarlar teskari tartibda kelishi mumkin.
     const key = want === 'f' ? 'search.searching_f' : want === 'm' ? 'search.searching_m' : 'search.searching';
-    const online = Math.max(1, await usersRepo.onlineCount());
-    await notify(user, key, { online }, { reply_markup: menuFor(user, 'searching') });
+    await sendTo(user.id, await searchingText(user, key), { reply_markup: menuFor(user, 'searching') });
 
     await bot.emit('search:start', { user, want });
     const vip = isPremium(user);

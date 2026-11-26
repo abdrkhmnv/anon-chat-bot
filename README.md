@@ -25,8 +25,8 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
   Matn, rasm, video, ovozli xabar, stiker va boshqa turlar ishlaydi.
 - **Spam himoyasi:** suhbatda havola, `@username`, telefon raqam va kontakt yuborib bo'lmaydi (`config.antispam`).
 - **Baho:** suhbatdan keyin 👍/👎. Ko'p 👎 olganlar navbatda orqaroq turadi (`config.badRating`, `badPenaltySec`).
-- **Jimlik:** `inactivityMin` daqiqa hech kim yozmasa, suhbat avtomatik yopiladi.
-- **Onlayn soni:** qidiruv xabarida "🟢 Hozir faol: N kishi".
+- **Jimlik (hozircha o'chiq):** `inactivityMin` daqiqa hech kim yozmasa, suhbat avtomatik yopiladi. Yoqish: `inactivityMin: 10`.
+- **Onlayn soni (hozircha o'chiq):** qidiruv xabarida "🟢 Hozir faol: N kishi". Yoqish: `showOnline: true`.
 - **Do'st taklif qilish (`/invite`):** har 3 ta ro'yxatdan o'tgan do'st uchun 3 kun VIP (`config.referral`).
 - **Ikki til:** o'zbek va rus (`locales/uz.js`, `locales/ru.js`). Til Telegram tiliga qarab tanlanadi,
   `/settings` → "🌐 Til / Язык" orqali almashtiriladi.
