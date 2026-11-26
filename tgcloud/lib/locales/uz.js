@@ -15,6 +15,7 @@ export default {
   'btn.next': '⏭ Keyingisi',
   'btn.stop': '⛔ Suhbatni tugatish',
   'btn.cancel': '❌ Qidiruvni bekor qilish',
+  'btn.report': '⚠️ Shikoyat qilish',
 
   // ro'yxatdan o'tish
   'reg.welcome': '👋 <b>Anonim suhbat</b> botiga xush kelibsiz!\n\nBu yerda siz tasodifiy odam bilan butunlay anonim gaplasha olasiz. Boshlash uchun ikkita savolga javob bering.\n\n<b>Jinsingizni tanlang:</b>',
@@ -77,4 +78,14 @@ export default {
   'premium.bad_invoice': 'Bu tarif eskirgan. /vip orqali qaytadan tanlang.',
   'premium.success': '🎉 <b>Rahmat!</b> VIP faollashtirildi.\nAmal qilish muddati: <b>{until}</b> gacha.',
   'premium.refunded': '↩️ To\'lovingiz qaytarildi ({stars} ⭐). VIP muddati qisqartirildi.',
+
+  // shikoyat
+  'report.ask': 'Shikoyat sababini tanlang:',
+  'report.reason.spam': 'Spam / reklama',
+  'report.reason.abuse': 'Haqorat',
+  'report.reason.adult': '18+ kontent',
+  'report.reason.other': 'Boshqa',
+  'report.done': '✅ Shikoyatingiz qabul qilindi. Rahmat!',
+  'report.dup': 'Siz bu suhbat bo\'yicha allaqachon shikoyat qilgansiz.',
+  'report.nothing': 'Shikoyat qilish uchun suhbat topilmadi.',
 };

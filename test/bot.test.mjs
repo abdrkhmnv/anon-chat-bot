@@ -184,6 +184,25 @@ test("Stars to'lovi: tekshiruv, faollashtirish, takroriy update", async () => {
   config.adminIds.pop();
 });
 
+test(`shikoyat: ${config.autoBanReports} ta shikoyatdan keyin avtomatik ban`, async () => {
+  await register(1, 'f', 22);
+  for (let i = 0; i < config.autoBanReports; i++) {
+    const r = 10 + i;
+    await register(r, 'm', 25);
+    await send(1, '/search');
+    await send(r, '/search');
+    await send(r, '/stop');
+    const chatId = raw().prepare('SELECT max(id) AS id FROM chats').get().id;
+    await press(r, `repr:${chatId}:abuse`);
+    await press(r, `repr:${chatId}:abuse`); // takroriy — hisoblanmaydi
+  }
+  assert.equal(user(1).reports, config.autoBanReports);
+  assert.equal(user(1).banned, 1);
+  await send(1, '/search');
+  assert.match(lastTo(1), /bloklangansiz/);
+  assert.equal(user(1).state, 'idle');
+});
+
 test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', async () => {
   await register(1, 'm', 25);
   await send(1, '/settings');
@@ -210,9 +229,9 @@ test('/settings: jins va yoshni o\'zgartirish; suhbat vaqtida mumkin emas', asyn
   assert.match(lastTo(1), /sozlamalarni o'zgartirib bo'lmaydi/);
 });
 
-test("/help, /profile, /report o'chirilgan; menyuda Profil/Yordam yo'q; suhbat tugaganda shikoyat tugmasi yo'q", async () => {
+test("/help, /profile o'chirilgan; menyuda Profil/Yordam yo'q; suhbat tugaganda shikoyat tugmasi bor", async () => {
   await register(1, 'm', 25);
-  for (const cmd of ['/help', '/profile', '/report', 'Profil', 'ℹ️ Yordam']) {
+  for (const cmd of ['/help', '/profile', 'Profil', 'ℹ️ Yordam']) {
     await send(1, cmd);
     assert.match(lastTo(1), /Bosh menyu/, cmd);
   }
@@ -224,7 +243,9 @@ test("/help, /profile, /report o'chirilgan; menyuda Profil/Yordam yo'q; suhbat t
   await send(2, '/search');
   await send(1, '/stop');
   const inl = calls.flatMap((c) => c.params?.reply_markup?.inline_keyboard?.flat() || []);
-  assert.equal(inl.filter((b) => /^rep/.test(b.callback_data)).length, 0);
+  assert.equal(inl.filter((b) => /^rep:/.test(b.callback_data)).length, 2); // ikkala tomonga
+  await send(1, '/report');
+  assert.match(lastTo(1), /Shikoyat sababini tanlang/);
 });
 
 test('plagin qo\'shish: yadroga tegmasdan yangi buyruq va hodisa', async () => {
@@ -290,7 +311,7 @@ test('premium emoji: barcha tugmalarda icon_custom_emoji_id, matnda oddiy emoji 
   await send(998, '/settings');     // ✏️ tugmalari
   await send(998, '/search');       // ❌ bekor qilish
   await send(997, '/search');       // ⏭ / ⛔ (suhbat)
-  await send(998, '/stop');
+  await send(998, '/stop');         // ⚠️ shikoyat
   for (let id = 3000; id < 3011; id++) await register(id, 'm', 20);
   await send(998, '/users');        // ➡️ keyingi
   await press(998, 'adminusers:2'); // ⬅️ oldingi

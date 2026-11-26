@@ -25,6 +25,9 @@ export const config = {
   // (foydalanuvchi qidiruvni unutib ketgan) va tanlovga kirmaydi.
   
 
+  // Qancha shikoyatdan keyin foydalanuvchi avtomatik bloklanadi.
+  autoBanReports: 5,
+
   // Premium tariflar. `stars` — narx (Telegram Stars, XTR), `days` — muddat.
   // Narxlarni xohlagancha o'zgartiring; yangi tarif qo'shish = shu ro'yxatga qator qo'shish.
   plans: [

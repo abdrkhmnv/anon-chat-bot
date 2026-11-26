@@ -102,6 +102,14 @@ export const usersRepo = {
     );
   },
 
+  async addReport(id) {
+    const res = await run(
+      'UPDATE users SET reports = reports + 1 WHERE id = :id RETURNING reports',
+      { id },
+    );
+    return res.rows?.[0]?.reports ?? 0;
+  },
+
   async stats() {
     const ts = now();
     return get(

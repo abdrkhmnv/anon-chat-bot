@@ -21,7 +21,7 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
   ro'yxatdan o'tganlar ulanadi. VIP qiz yigit qidirayotgan bo'lsa, unga qiz ulanmaydi.
 - Xabarlar `copyMessage` orqali uzatiladi, shuning uchun ism, username va "forwarded" belgisi ko'rinmaydi.
   Matn, rasm, video, ovozli xabar, stiker va boshqa turlar ishlaydi.
-- Bundan tashqari: `/next`, `/stop`, `/settings` (jins va yoshni o'zgartirish), admin buyruqlari
+- Bundan tashqari: `/next`, `/stop`, `/settings` (jins va yoshni o'zgartirish), shikoyat va avtomatik ban, admin buyruqlari
   (`/stats`, `/users`, `/user`, `/ban`, `/unban`, `/grant`, `/refund`), hamda Telegram to'lov
   qoidalari talab qiladigan `/terms` va `/paysupport`.
 
@@ -82,6 +82,7 @@ girl - Qiz qidirish (VIP)
 boy - Yigit qidirish (VIP)
 vip - VIP tariflar
 settings - Sozlamalar (jins va yosh)
+report - Shikoyat qilish
 terms - Foydalanish shartlari
 paysupport - To'lov bo'yicha yordam
 ```
@@ -113,11 +114,11 @@ tgcloud/
       bot.js                marshrutlash, middleware, plaginlar, hodisalar (event bus)
       context.js            ctx: reply/edit/answer/t(), ctx.user
       db.js  i18n.js  keyboards.js
-    repo/                   SQL so'rovlari (users, queue, chats, payments, kv)
+    repo/                   SQL so'rovlari (users, queue, chats, payments, reports, kv)
     services/               mantiq: matchmaking.js (qidiruv/juftlash), premium.js (Stars)
     plugins/                FUNKSIYALAR: har biri alohida fayl
       index.js              yoqilgan plaginlar ro'yxati
-      users  registration  help(/terms, /paysupport)  premium  settings  admin  chat
+      users  registration  help(/terms, /paysupport)  premium  settings  report  admin  chat
     locales/uz.js           barcha matnlar
 test/                       mock sdk + testlar
 docs/tgcloud-sdk.md         platforma SDK ma'lumotnomasi
@@ -170,6 +171,7 @@ Yadroni ham, boshqa plaginlarni ham o'zgartirish kerak emas.
 - `chat:end`
 - `relay:before` — `ctx.state.blockRelay = true` qilsangiz xabar uzatilmaydi. Antispam yoki link filtri uchun qulay.
 - `premium:granted`
+- `report:created`
 - `user:banned`
 
 Yangi update turi uchun (masalan `edited_message`) `tgcloud/handlers/edited_message.js` faylini

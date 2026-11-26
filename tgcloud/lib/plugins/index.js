@@ -13,6 +13,7 @@ import registration from './registration.js';
 import info, { fallback } from './help.js'; // /terms, /paysupport, /menu
 import premium from './premium.js';
 import settings from './settings.js';
+import report from './report.js';
 import admin from './admin.js';
 import broadcast from './broadcast.js';
 import chat from './chat.js';
@@ -23,6 +24,7 @@ export const plugins = [
   info,
   premium,
   settings,
+  report,
   admin,
   broadcast,
   // ← yangi plaginlar shu yerga
