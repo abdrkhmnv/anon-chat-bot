@@ -45,6 +45,7 @@ Quyidagi buyruqlar faqat `tgcloud/lib/config.js` dagi `adminIds` ro'yxatiga kiri
 - `/ban <id>` va `/unban <id>` — bloklash / blokdan chiqarish.
 - `/grant <id> <kun>` — VIP muddatini qo'lda uzaytirish.
 - `/refund <charge_id>` — Telegram Stars to'lovini qaytarish.
+- `/queue` — qidiruv navbati: kim navbatda, "o'lik" qidiruvlar, baza migratsiyasi holati. `/queuefix` — ularni tozalaydi.
 - `/setcommands` — "/" menyusidagi buyruqlar ro'yxatini darhol qayta o'rnatadi. Odatda shart emas: deploy'dan keyin bot ro'yxatni o'zi yangilaydi.
 
 `/users` ro'yxati bazadagi `users` jadvalidan olinadi; foydalanuvchilar botga kamida bir marta yozgan bo'lishi kerak.

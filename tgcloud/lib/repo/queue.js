@@ -45,6 +45,8 @@ export const queueRepo = {
        ), cand AS (
          SELECT q.user_id FROM queue q, me
          WHERE q.user_id <> me.user_id
+           -- "arvoh": navbatda qolgan, lekin endi qidirmayotgan foydalanuvchi bilan ulanmaymiz
+           AND EXISTS (SELECT 1 FROM users u WHERE u.id = q.user_id AND u.state = 'searching' AND u.banned = 0)
            AND (me.want_gender = 'any' OR q.gender = me.want_gender)
            AND (q.want_gender = 'any' OR q.want_gender = me.gender)
            AND (me.want_region IS NULL OR q.region = me.want_region)

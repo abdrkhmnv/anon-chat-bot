@@ -61,21 +61,31 @@ export function createMatchmaking(bot) {
 
     await bot.emit('search:start', { user, want });
     const vip = isPremium(user);
-    await queueRepo.join({
-      userId: user.id, gender: user.gender, age: user.age,
-      wantGender: want, premium: vip,
-      region: user.region ?? null,
-      // VIP filtrlari faqat VIP faol bo'lsa amal qiladi.
-      wantRegion: vip ? user.want_region ?? null : null,
-      ageMin: vip ? user.age_min ?? null : null,
-      ageMax: vip ? user.age_max ?? null : null,
-      penalty: isBadRated(user),
-    });
+    let partner;
+    try {
+      await queueRepo.join({
+        userId: user.id, gender: user.gender, age: user.age,
+        wantGender: want, premium: vip,
+        region: user.region ?? null,
+        // VIP filtrlari faqat VIP faol bo'lsa amal qiladi.
+        wantRegion: vip ? user.want_region ?? null : null,
+        ageMin: vip ? user.age_min ?? null : null,
+        ageMax: vip ? user.age_max ?? null : null,
+        penalty: isBadRated(user),
+      });
 
-    const partner = await queueRepo.claimPartner(user.id, {
-      boostMs: config.vipBoostSec * 1000, penaltyMs: config.badPenaltySec * 1000,
-    });
-    if (!partner) return { status: 'queued' };
+      partner = await queueRepo.claimPartner(user.id, {
+        boostMs: config.vipBoostSec * 1000, penaltyMs: config.badPenaltySec * 1000,
+      });
+      if (!partner) return { status: 'queued' };
+    } catch (e) {
+      // Navbatga qo'shib bo'lmadi — foydalanuvchi "qidiruvda, lekin navbatda yo'q"
+      // (o'lik qidiruv) holatida qolib ketmasin.
+      await queueRepo.leave(user.id).catch(() => {});
+      await usersRepo.update(user.id, { state: 'idle' }).catch(() => {});
+      user.state = 'idle';
+      throw e;
+    }
 
     await startChat(user.id, partner.user_id);
     return { status: 'matched', partnerId: partner.user_id };

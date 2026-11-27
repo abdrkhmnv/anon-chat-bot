@@ -5,6 +5,7 @@
 //   /refund <charge_id>   — Stars to'lovini qaytarish
 //   /user <id>            — foydalanuvchi ma'lumoti
 //   /users [sahifa]       — barcha foydalanuvchilar (10 tadan)
+//   /queue, /queuefix     — qidiruv navbatini tekshirish va tozalash
 //   /setcommands          — "/" menyusidagi buyruqlarni o'rnatish (uz + ru)
 
 import { isAdmin } from '../config.js';
@@ -14,7 +15,9 @@ import { queueRepo } from '../repo/queue.js';
 import { chatsRepo } from '../repo/chats.js';
 import { paymentsRepo } from '../repo/payments.js';
 import { formatDate } from '../services/premium.js';
-import { btn } from '../core/keyboards.js';
+import { btn, menuFor } from '../core/keyboards.js';
+import { run, all } from '../core/db.js';
+import { notify } from '../services/notify.js';
 
 export default {
   name: 'admin',
@@ -104,6 +107,52 @@ export default {
     };
 
     bot.command('users', admin((ctx) => usersPage(ctx, ctx.args[0] || 1)));
+
+    // /queue — qidiruv navbatini tekshirish: kim navbatda, "o'lik" qidiruvlar, migratsiya holati.
+    // /queuefix — o'lik qidiruvlarni (qidiruvda, lekin navbatda yo'q) va arvohlarni tozalaydi.
+    async function queueReport() {
+      let schemaOk = true;
+      try {
+        await run('SELECT region, want_region, age_min, age_max, penalty FROM queue LIMIT 0');
+      } catch {
+        schemaOk = false;
+      }
+      const rows = await all(
+        `SELECT q.user_id, q.gender, q.age, q.want_gender, q.premium, u.state
+         FROM queue q LEFT JOIN users u ON u.id = q.user_id ORDER BY q.created_at LIMIT 20`,
+      );
+      const dead = await all(
+        `SELECT id FROM users WHERE state = 'searching'
+         AND id NOT IN (SELECT user_id FROM queue) LIMIT 50`,
+      );
+      const ghosts = rows.filter((r) => r.state !== 'searching');
+      return { schemaOk, rows, dead, ghosts };
+    }
+
+    bot.command('queue', admin(async (ctx) => {
+      const { schemaOk, rows, dead, ghosts } = await queueReport();
+      const lines = rows.map((r) => `• <code>${r.user_id}</code> ${r.gender}/${r.age} → ${r.want_gender}`
+        + `${r.premium ? ' 💎' : ''}${r.state !== 'searching' ? ` ⚠️ (${r.state ?? 'yo\'q'})` : ''}`);
+      return ctx.reply(
+        `<b>Navbat</b>: ${rows.length} kishi\n${lines.join('\n') || '—'}\n\n`
+        + `💀 O'lik qidiruv (qidiruvda, navbatda yo'q): <b>${dead.length}</b>\n`
+        + `👻 Arvoh (navbatda, qidirmayapti): <b>${ghosts.length}</b>\n`
+        + `🗄 Baza migratsiyasi: ${schemaOk ? '✅' : '❌ qo\'llanmagan — workflow\'ni qayta ishga tushiring'}`
+        + (dead.length || ghosts.length ? '\n\nTozalash: /queuefix' : ''),
+      );
+    }));
+
+    bot.command('queuefix', admin(async (ctx) => {
+      const { dead, ghosts } = await queueReport();
+      for (const d of dead) {
+        await usersRepo.update(d.id, { state: 'idle' });
+        const u = await usersRepo.get(d.id);
+        // Foydalanuvchiga: qidiruv to'xtadi, qaytadan /next bosing.
+        await notify(u, 'chat.after', null, { reply_markup: menuFor(u, 'idle') }).catch(() => {});
+      }
+      for (const g of ghosts) await queueRepo.leave(g.user_id);
+      return ctx.reply(`✅ Tozalandi: o'lik qidiruv ${dead.length}, arvoh ${ghosts.length}.`);
+    }));
 
     // /setcommands — "/" menyusidagi buyruqlarni darhol qayta o'rnatadi (uz + ru).
     // Odatda shart emas: commands plagini deploy'dan keyin o'zi yangilaydi.

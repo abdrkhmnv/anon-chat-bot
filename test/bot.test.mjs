@@ -510,6 +510,8 @@ test('navbat: VIP oldinga o\'tadi, yomon baholi orqaga suriladi', async () => {
   await send(1, '/stop');                  // navbatni bo'shatamiz
   // Jarima: navbat darajasida — avval kelgan yomon baholi (10) keyin kelgan (11) dan orqada.
   const { queueRepo } = await import('../tgcloud/lib/repo/queue.js');
+  for (const [id, g] of [[10, 'f'], [11, 'f'], [12, 'm'], [13, 'm']]) await register(id, g, 20);
+  raw().prepare("UPDATE users SET state = 'searching' WHERE id IN (10, 11, 12, 13)").run();
   await queueRepo.join({ userId: 10, gender: 'f', age: 20, penalty: 1 });
   await queueRepo.join({ userId: 11, gender: 'f', age: 21 });
   await queueRepo.join({ userId: 12, gender: 'm', age: 22 });
@@ -671,4 +673,55 @@ test('/search olib tashlangan: suhbatsiz holatda bosh menyu, qidiruv boshlanmayd
   assert.match(lastTo(1), /Bosh menyu/);
   await send(1, '/next');                      // o'rniga /next
   assert.equal(user(1).state, 'searching');
+});
+
+test("o'lik qidiruv: navbatga qo'shishda xato bo'lsa foydalanuvchi qidiruvda qolib ketmaydi", async () => {
+  const { queueRepo } = await import('../tgcloud/lib/repo/queue.js');
+  await register(1, 'm', 25);
+  const orig = queueRepo.join;
+  queueRepo.join = async () => { throw new Error('no such column: region'); };
+  try {
+    await send(1, '/next');
+  } finally {
+    queueRepo.join = orig;
+  }
+  assert.equal(user(1).state, 'idle');          // qidiruvda "osilib" qolmadi
+  assert.match(lastTo(1), /Xatolik/);
+  await register(2, 'f', 22);
+  await send(1, '/next');
+  await send(2, '/next');
+  assert.equal(user(1).partner_id, 2);           // keyingi urinish normal ishlaydi
+});
+
+test("arvoh: navbatda qolgan, lekin qidirmayotgan foydalanuvchi bilan ulanmaydi; /queue va /queuefix", async () => {
+  await register(1, 'm', 25);
+  await register(2, 'f', 22);
+  await register(3, 'f', 23);
+  await send(2, '/next');
+  raw().prepare("UPDATE users SET state = 'idle' WHERE id = 2").run();      // 2 — arvoh
+  raw().prepare("UPDATE users SET state = 'searching' WHERE id = 3").run(); // 3 — o'lik (navbatda yo'q)
+  await send(1, '/next');
+  assert.equal(user(1).state, 'searching');      // arvoh 2 bilan ulanmadi
+  assert.equal(user(2).state, 'idle');
+
+  config.adminIds.push(777);
+  try {
+    await register(777, 'm', 30);
+    await send(777, '/queue');
+    const rep = lastTo(777);
+    assert.match(rep, /Navbat<\/b>: 2 kishi/);
+    assert.match(rep, /O'lik qidiruv.*<b>1<\/b>/);
+    assert.match(rep, /Arvoh.*<b>1<\/b>/);
+    assert.match(rep, /migratsiyasi: ✅/);
+    await send(777, '/queuefix');
+    assert.match(lastTo(777), /o'lik qidiruv 1, arvoh 1/);
+    assert.equal(user(3).state, 'idle');
+    assert.match(lastTo(3), /\/next/);
+    await send(777, '/queue');
+    assert.match(lastTo(777), /O'lik qidiruv.*<b>0<\/b>/);
+  } finally {
+    config.adminIds.pop();
+  }
+  await send(3, '/next');                        // endi 1 va 3 ulanadi
+  assert.equal(user(3).partner_id, 1);
 });

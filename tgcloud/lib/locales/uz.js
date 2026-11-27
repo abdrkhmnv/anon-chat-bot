@@ -9,6 +9,7 @@ export default {
   'gender.f': 'Qiz',
 
   // tugmalar (reply keyboard)
+  'btn.search': '🔎 Suhbatdosh qidirish',
   'btn.search_f': '👩 Qiz bola qidirish',
   'btn.search_m': '👨 O\'g\'il bola qidirish',
   'btn.premium': '💎 VIP',
