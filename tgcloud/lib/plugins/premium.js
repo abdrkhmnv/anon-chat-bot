@@ -29,8 +29,7 @@ export default {
       const status = isPremium(ctx.user)
         ? ctx.t('premium.status_active', { until: formatDate(ctx.user.premium_until) })
         : ctx.t('premium.status_free');
-      const filterLine = config.vipFilters ? ctx.t('premium.filter_line') : '';
-      return ctx.reply(ctx.t('premium.text', { status, filterLine }), { reply_markup: plansKeyboard(ctx) });
+      return ctx.reply(ctx.t('premium.text', { status }), { reply_markup: plansKeyboard(ctx) });
     }
     bot.service('premiumUi', { offer });
 

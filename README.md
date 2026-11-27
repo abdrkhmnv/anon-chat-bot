@@ -12,7 +12,7 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
 | Tasodifiy suhbatdosh qidirish | ✅ | ✅ |
 | Jins bo'yicha qidirish (`/girl`, `/boy`) | ❌ | ✅ |
 | Suhbatdoshning jinsi va yoshini ko'rish | ❌ | ✅ |
-| Viloyat va yosh oralig'i bo'yicha qidirish (`/filter`, hozircha o'chiq — `vipFilters`) | ❌ | ✅ |
+| Viloyat va yosh oralig'i bo'yicha qidirish (`/filter`) | ❌ | ✅ |
 | Navbatda ustuvorlik (`vipBoostSec`) | ❌ | ✅ |
 
 - VIP tariflari: **3 kun, 1 hafta, 1 oy, 3 oy, 6 oy, 12 oy**. To'lov **Telegram Stars (XTR)** bilan.
@@ -30,7 +30,7 @@ ma'lumotlar bazasi platformaning o'zidagi SQLite.
 - **Do'st taklif qilish (`/invite`):** har 3 ta ro'yxatdan o'tgan do'st uchun 3 kun VIP (`config.referral`).
 - **Ikki til:** o'zbek va rus (`locales/uz.js`, `locales/ru.js`). Til Telegram tiliga qarab tanlanadi,
   `/settings` → "🌐 Til / Язык" orqali almashtiriladi.
-- **Viloyat (hozircha o'chiq, `vipFilters`):** ro'yxatdan o'tgach ixtiyoriy so'raladi, `/settings` da o'zgartiriladi.
+- **Viloyat:** ro'yxatdan o'tgach ixtiyoriy so'raladi, `/settings` da o'zgartiriladi.
 - Bundan tashqari: `/next`, `/stop`, `/settings` (jins, yosh, viloyat, til), shikoyat va avtomatik ban, admin buyruqlari
   (`/stats`, `/users`, `/user`, `/ban`, `/unban`, `/grant`, `/refund`), hamda Telegram to'lov
   qoidalari talab qiladigan `/terms` va `/paysupport`.

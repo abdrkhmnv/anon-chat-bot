@@ -25,14 +25,12 @@ export default {
     ]);
 
     bot.command('filter', (ctx) => {
-      if (!config.vipFilters) return ctx.reply(ctx.t('menu.main')); // vaqtincha o'chirilgan
       if (!isPremium(ctx.user)) return bot.services.premiumUi.offer(ctx, 'filter.vip_only');
       return ctx.reply(menuText(ctx), { reply_markup: menuKb(ctx) });
     });
 
     bot.action('flt', async (ctx) => {
       await ctx.answer();
-      if (!config.vipFilters) return ctx.edit(ctx.t('menu.main'));
       const [what, value] = ctx.args;
       if (what === 'close') {
         return api.deleteMessage({ chat_id: ctx.message.chat.id, message_id: ctx.message.message_id })

@@ -77,7 +77,6 @@ export default {
         ctx.user.age = age;
         ctx.user.step = null;
         await bot.emit('user:registered', { user: ctx.user });
-        if (!config.vipFilters) return ctx.reply(ctx.t('reg.done'), { reply_markup: menuFor(ctx.user) });
         await ctx.reply(ctx.t('reg.done'), { reply_markup: menuFor(ctx.user) });
         // Viloyat — ixtiyoriy (VIP viloyat bo'yicha qidira oladi). Tanlov /settings dagi kabi saqlanadi.
         return ctx.reply(ctx.t('reg.ask_region'), { reply_markup: inline([

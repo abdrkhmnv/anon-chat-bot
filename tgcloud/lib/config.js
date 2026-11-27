@@ -21,11 +21,6 @@ export const config = {
   minAge: 18,
   maxAge: 99,
 
-  // VIP filtri (/filter: viloyat va yosh oralig'i) va viloyat so'rash.
-  // false = o'chirilgan: /filter ishlamaydi, saqlangan filtrlar e'tiborga olinmaydi,
-  // ro'yxatdan o'tishda va /settings da viloyat so'ralmaydi. Yoqish: true.
-  vipFilters: false,
-
   // Viloyatlar (kodlar). Nomlari locales/*.js da: 'region.<kod>'.
   regions: ['tsh', 'tsv', 'and', 'bux', 'fer', 'jiz', 'xor', 'nam', 'nav', 'qas', 'qor', 'sam', 'sir', 'sur'],
 

@@ -67,10 +67,10 @@ export function createMatchmaking(bot) {
         userId: user.id, gender: user.gender, age: user.age,
         wantGender: want, premium: vip,
         region: user.region ?? null,
-        // VIP filtrlari faqat VIP faol va config.vipFilters yoqilgan bo'lsa amal qiladi.
-        wantRegion: vip && config.vipFilters ? user.want_region ?? null : null,
-        ageMin: vip && config.vipFilters ? user.age_min ?? null : null,
-        ageMax: vip && config.vipFilters ? user.age_max ?? null : null,
+        // VIP filtrlari faqat VIP faol bo'lsa amal qiladi.
+        wantRegion: vip ? user.want_region ?? null : null,
+        ageMin: vip ? user.age_min ?? null : null,
+        ageMax: vip ? user.age_max ?? null : null,
         penalty: isBadRated(user),
       });
 
