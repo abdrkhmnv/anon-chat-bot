@@ -16,7 +16,7 @@ import { chatsRepo } from '../repo/chats.js';
 import { paymentsRepo } from '../repo/payments.js';
 import { formatDate } from '../services/premium.js';
 import { btn, menuFor } from '../core/keyboards.js';
-import { run, all } from '../core/db.js';
+import { all } from '../core/db.js';
 import { notify } from '../services/notify.js';
 
 export default {
@@ -111,14 +111,19 @@ export default {
     // /queue — qidiruv navbatini tekshirish: kim navbatda, "o'lik" qidiruvlar, migratsiya holati.
     // /queuefix — o'lik qidiruvlarni (qidiruvda, lekin navbatda yo'q) va arvohlarni tozalaydi.
     async function queueReport() {
-      let schemaOk = true;
+      // Migratsiya: yangi ustunlarni o'qib ko'ramiz (all — SELECT uchun), xato bo'lsa matnini ko'rsatamiz.
+      let schemaError = null;
       try {
-        await run('SELECT region, want_region, age_min, age_max, penalty FROM queue LIMIT 0');
-      } catch {
-        schemaOk = false;
+        await all('SELECT region, want_region, age_min, age_max, penalty FROM queue LIMIT 1');
+        await all('SELECT region, want_region, age_min, age_max, likes, dislikes, referred_by, referrals FROM users LIMIT 1');
+      } catch (e) {
+        schemaError = String(e?.message || e).slice(0, 200);
       }
-      const rows = await all(
-        `SELECT q.user_id, q.gender, q.age, q.want_gender, q.premium, u.state
+      const rows = schemaError ? await all(
+        `SELECT q.user_id, q.gender, q.age, q.want_gender, q.premium, u.state, u.banned
+         FROM queue q LEFT JOIN users u ON u.id = q.user_id ORDER BY q.created_at LIMIT 20`,
+      ) : await all(
+        `SELECT q.*, u.state, u.banned
          FROM queue q LEFT JOIN users u ON u.id = q.user_id ORDER BY q.created_at LIMIT 20`,
       );
       const dead = await all(
@@ -126,18 +131,51 @@ export default {
          AND id NOT IN (SELECT user_id FROM queue) LIMIT 50`,
       );
       const ghosts = rows.filter((r) => r.state !== 'searching');
-      return { schemaOk, rows, dead, ghosts };
+      return { schemaError, rows, dead, ghosts };
+    }
+
+    // Ikki navbatdagi odam nega ulanmasligi (claimPartner shartlari bilan bir xil).
+    function whyNot(a, b) {
+      const r = [];
+      const side = (me, q, who) => {
+        if (me.want_gender !== 'any' && q.gender !== me.want_gender) r.push(`${who} faqat ${me.want_gender === 'f' ? 'qiz' : 'yigit'} qidiryapti`);
+        if (me.want_region && q.region !== me.want_region) r.push(`${who} filtri: viloyat ${me.want_region} (u: ${q.region || 'yo\'q'})`);
+        if (me.age_min != null && q.age < me.age_min) r.push(`${who} filtri: yosh ${me.age_min}+ (u: ${q.age})`);
+        if (me.age_max != null && q.age > me.age_max) r.push(`${who} filtri: yosh ≤${me.age_max} (u: ${q.age})`);
+      };
+      side(a, b, `<code>${a.user_id}</code>`);
+      side(b, a, `<code>${b.user_id}</code>`);
+      if (a.state !== 'searching' || b.state !== 'searching') r.push('biri qidirmayapti (arvoh)');
+      if (a.banned || b.banned) r.push('biri bloklangan');
+      return r;
     }
 
     bot.command('queue', admin(async (ctx) => {
-      const { schemaOk, rows, dead, ghosts } = await queueReport();
+      const { schemaError, rows, dead, ghosts } = await queueReport();
+      const filt = (r) => [
+        r.region ? `📍${r.region}` : '',
+        r.want_region ? `🎯${r.want_region}` : '',
+        r.age_min != null || r.age_max != null ? `🎂${r.age_min ?? ''}–${r.age_max ?? ''}` : '',
+        r.penalty ? '👎' : '',
+      ].filter(Boolean).join(' ');
       const lines = rows.map((r) => `• <code>${r.user_id}</code> ${r.gender}/${r.age} → ${r.want_gender}`
-        + `${r.premium ? ' 💎' : ''}${r.state !== 'searching' ? ` ⚠️ (${r.state ?? 'yo\'q'})` : ''}`);
+        + `${r.premium ? ' 💎' : ''} ${filt(r)}${r.state !== 'searching' ? ` ⚠️ (${r.state ?? 'yo\'q'})` : ''}`);
+      const why = [];
+      if (!schemaError) {
+        for (let i = 0; i < rows.length && why.length < 5; i++) {
+          for (let k = i + 1; k < rows.length && why.length < 5; k++) {
+            const reasons = whyNot(rows[i], rows[k]);
+            why.push(`<code>${rows[i].user_id}</code> ↔ <code>${rows[k].user_id}</code>: `
+              + (reasons.length ? reasons.join('; ') : '✅ mos — keyingi qidiruvda ulanadi'));
+          }
+        }
+      }
       return ctx.reply(
-        `<b>Navbat</b>: ${rows.length} kishi\n${lines.join('\n') || '—'}\n\n`
-        + `💀 O'lik qidiruv (qidiruvda, navbatda yo'q): <b>${dead.length}</b>\n`
+        `<b>Navbat</b>: ${rows.length} kishi\n${lines.join('\n') || '—'}\n`
+        + (why.length ? `\n<b>Nega ulanmayapti:</b>\n${why.join('\n')}\n` : '')
+        + `\n💀 O'lik qidiruv (qidiruvda, navbatda yo'q): <b>${dead.length}</b>\n`
         + `👻 Arvoh (navbatda, qidirmayapti): <b>${ghosts.length}</b>\n`
-        + `🗄 Baza migratsiyasi: ${schemaOk ? '✅' : '❌ qo\'llanmagan — workflow\'ni qayta ishga tushiring'}`
+        + `🗄 Baza migratsiyasi: ${schemaError ? `❌ <code>${schemaError.replace(/[<>&]/g, '')}</code>` : '✅'}`
         + (dead.length || ghosts.length ? '\n\nTozalash: /queuefix' : ''),
       );
     }));

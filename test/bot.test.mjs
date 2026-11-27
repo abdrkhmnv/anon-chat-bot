@@ -725,3 +725,29 @@ test("arvoh: navbatda qolgan, lekin qidirmayotgan foydalanuvchi bilan ulanmaydi;
   await send(3, '/next');                        // endi 1 va 3 ulanadi
   assert.equal(user(3).partner_id, 1);
 });
+
+test('/queue: nega ulanmayotganini ko\'rsatadi (VIP filtri)', async () => {
+  config.adminIds.push(777);
+  try {
+    await register(777, 'f', 44); makePremium(777);
+    await send(777, '/filter');
+    await press(777, 'flt:region:tsh');           // admin faqat Toshkent sh. dan qidiradi
+    await register(2, 'f', 20);                    // viloyati yo'q
+    await send(2, '/next');
+    await send(777, '/next');
+    assert.equal(user(777).state, 'searching');    // ulanmadi
+    await send(777, '/queue');
+    const rep = lastTo(777);
+    assert.match(rep, /🎯tsh/);
+    assert.match(rep, /Nega ulanmayapti/);
+    assert.match(rep, /filtri: viloyat tsh \(u: yo'q\)/);
+    assert.match(rep, /migratsiyasi: ✅/);
+
+    await send(777, '/stop');                      // qidiruvdan chiqadi
+    await press(777, 'flt:reset');                 // filtrni tozalaydi
+    await send(777, '/next');
+    assert.equal(user(777).partner_id, 2);         // endi ulanadi
+  } finally {
+    config.adminIds.pop();
+  }
+});
