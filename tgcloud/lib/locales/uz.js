@@ -114,7 +114,8 @@ export default {
   'ref.reward': '🎁 Tabriklaymiz! {need} ta do\'stingiz qo\'shildi — sizga <b>{days} kun VIP</b> berildi.\nAmal qilish muddati: <b>{until}</b> gacha.',
 
   // premium
-  'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Jins bo\'yicha qidirish\n• 🎂 Suhbatdoshning jinsi va yoshini ko\'rish\n• 📍 Viloyat va yosh oralig\'i bo\'yicha qidirish (/filter)\n• ⚡ Navbatda ustuvorlik — suhbatdoshni tezroq topasiz\n\n{status}\n\n🎁 Do\'stlarni taklif qilib bepul VIP oling: /invite\n\nTarifni tanlang (to\'lov Telegram Stars ⭐ orqali):',
+  'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Jins bo\'yicha qidirish\n• 🎂 Suhbatdoshning jinsi va yoshini ko\'rish\n{filterLine}• ⚡ Navbatda ustuvorlik — suhbatdoshni tezroq topasiz\n\n{status}\n\n🎁 Do\'stlarni taklif qilib bepul VIP oling: /invite\n\nTarifni tanlang (to\'lov Telegram Stars ⭐ orqali):',
+  'premium.filter_line': '• 📍 Viloyat va yosh oralig\'i bo\'yicha qidirish (/filter)\n',
   'premium.status_free': 'Hozirgi tarif: Oddiy',
   'premium.status_active': 'VIP faol: <b>{until}</b> gacha. Yangi xarid muddatni uzaytiradi.',
   'premium.plan_btn': '{title} — {stars} ⭐',

@@ -114,7 +114,8 @@ export default {
   'ref.reward': '🎁 Поздравляем! Присоединились {need} ваших друзей — вам начислено <b>{days} дн. VIP</b>.\nДействует до: <b>{until}</b>.',
 
   // premium
-  'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Поиск по полу\n• 🎂 Пол и возраст собеседника\n• 📍 Поиск по региону и возрасту (/filter)\n• ⚡ Приоритет в очереди — находите собеседника быстрее\n\n{status}\n\n🎁 Получите VIP бесплатно, пригласив друзей: /invite\n\nВыберите тариф (оплата через Telegram Stars ⭐):',
+  'premium.text': '💎 <b>VIP</b>\n\n• 👩👨 Поиск по полу\n• 🎂 Пол и возраст собеседника\n{filterLine}• ⚡ Приоритет в очереди — находите собеседника быстрее\n\n{status}\n\n🎁 Получите VIP бесплатно, пригласив друзей: /invite\n\nВыберите тариф (оплата через Telegram Stars ⭐):',
+  'premium.filter_line': '• 📍 Поиск по региону и возрасту (/filter)\n',
   'premium.status_free': 'Текущий тариф: Обычный',
   'premium.status_active': 'VIP активен до <b>{until}</b>. Новая покупка продлевает срок.',
   'premium.plan_btn': '{title} — {stars} ⭐',

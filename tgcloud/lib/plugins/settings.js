@@ -22,7 +22,7 @@ export default {
     const menuKb = (ctx) => inline([
       [btn(ctx.t('settings.btn_gender'), 'set:gender')],
       [btn(ctx.t('settings.btn_age'), 'set:age')],
-      [btn(ctx.t('settings.btn_region'), 'set:region')],
+      ...(config.vipFilters ? [[btn(ctx.t('settings.btn_region'), 'set:region')]] : []),
       [btn(ctx.t('settings.btn_lang'), 'set:lang')],
       back(ctx, 'set:close'),
     ]);

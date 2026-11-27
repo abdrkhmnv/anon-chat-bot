@@ -5,6 +5,7 @@
 
 import { api } from 'sdk';
 import { t } from '../core/i18n.js';
+import { config } from '../config.js';
 import { kv } from '../repo/kv.js';
 
 const KV_KEY = 'bot:commands';
@@ -17,8 +18,15 @@ export function parseCommands(text) {
   });
 }
 
+// O'chirilgan funksiyalarning buyruqlari menyuda ko'rinmaydi.
+const hidden = () => new Set(config.vipFilters ? [] : ['filter']);
+
 function currentLists() {
-  return LANGS.map(([lang, code]) => ({ code, commands: parseCommands(t(lang, 'bot.commands')) }));
+  const off = hidden();
+  return LANGS.map(([lang, code]) => ({
+    code,
+    commands: parseCommands(t(lang, 'bot.commands')).filter((c) => !off.has(c.command)),
+  }));
 }
 
 /** Ro'yxatni Telegram'ga yuboradi (agar o'zgargan bo'lsa yoki force). → yangilandimi */

@@ -48,13 +48,28 @@ test("ro'yxatdan o'tish: jins, yosh, yosh chegarasi", async () => {
   await send(1, '15');
   assert.match(lastTo(1), /18 dan 99 gacha/);
   await send(1, '21');
-  assert.match(textsTo(1).at(-2), /Tayyor/);
-  assert.match(lastTo(1), /Qaysi viloyatdansiz/);   // viloyat — ixtiyoriy
+  assert.match(lastTo(1), /Tayyor/);                // filtr o'chiq — viloyat so'ralmaydi
   const u = user(1);
   assert.equal(u.gender, 'f');
   assert.equal(u.age, 21);
-  await press(1, 'set:region:sam');
-  assert.equal(user(1).region, 'sam');
+});
+
+test('vipFilters yoqilganda: ro\'yxatdan o\'tgach viloyat so\'raladi, /settings da viloyat tugmasi bor', async () => {
+  config.vipFilters = true;
+  try {
+    await send(1, '/start');
+    await press(1, 'reg:g:f');
+    await send(1, '21');
+    assert.match(textsTo(1).at(-2), /Tayyor/);
+    assert.match(lastTo(1), /Qaysi viloyatdansiz/);
+    await press(1, 'set:region:sam');
+    assert.equal(user(1).region, 'sam');
+    await send(1, '/settings');
+    const kb = calls.at(-1).params.reply_markup.inline_keyboard.flat();
+    assert.ok(kb.some((b) => b.callback_data === 'set:region'));
+  } finally {
+    config.vipFilters = false;
+  }
 });
 
 test('ikki oddiy foydalanuvchi ulanadi; jins/yosh ko\'rinmaydi; xabar anonim uzatiladi', async () => {
@@ -231,7 +246,7 @@ test('/settings: bitta o\'zgartirishdan keyin yopiladi; Orqaga ishlaydi; tugmala
   const kb = calls.at(-1).params.reply_markup.inline_keyboard;
   assert.deepEqual(kb.map((r) => r.map((b) => [b.text, b.callback_data, b.style])),
     [[['👨 Jinsimni 👩', 'set:gender', undefined]], [['📅 Yoshimni', 'set:age', undefined]],
-      [['📍 Viloyatimni', 'set:region', undefined]], [['🌐 Til / Язык', 'set:lang', undefined]],
+      [['🌐 Til / Язык', 'set:lang', undefined]],
       [['⬅️ Orqaga', 'set:close', undefined]]]);
   assert.ok(kb.flat().every((b) => !b.icon_custom_emoji_id)); // oddiy emojilar
 
@@ -460,6 +475,8 @@ test('spam himoyasi: havola, @username, telefon, kontakt to\'siladi; oddiy matn 
 });
 
 test('VIP filtri: viloyat va yosh; ikki tomonlama; oddiy foydalanuvchida ishlamaydi', async () => {
+  config.vipFilters = true;
+  try {
   await register(1, 'm', 25);
   await send(1, '/filter');
   assert.ok(textsTo(1).some((t) => /Viloyat va yosh oralig'i bo'yicha qidirish faqat <b>VIP<\/b>/.test(t))); // oddiy — taklif
@@ -494,6 +511,9 @@ test('VIP filtri: viloyat va yosh; ikki tomonlama; oddiy foydalanuvchida ishlama
   makePremium(1);
   await press(1, 'flt:reset');
   assert.deepEqual([user(1).want_region, user(1).age_min], [null, null]);
+  } finally {
+    config.vipFilters = false;
+  }
 });
 
 test('navbat: VIP oldinga o\'tadi, yomon baholi orqaga suriladi', async () => {
@@ -646,7 +666,7 @@ test('buyruqlar ro\'yxati: deploy\'dan keyin avtomatik bir marta; /setcommands m
   assert.equal(uz.params.language_code, undefined);
   assert.equal(ru.params.language_code, 'ru');
   assert.deepEqual(uz.params.commands.map((c) => c.command),
-    ['next', 'stop', 'girl', 'boy', 'vip', 'filter', 'invite', 'settings', 'report', 'terms', 'paysupport']);
+    ['next', 'stop', 'girl', 'boy', 'vip', 'invite', 'settings', 'report', 'terms', 'paysupport']); // filter — o'chiq
   assert.equal(ru.params.commands.length, uz.params.commands.length);
   assert.ok(!uz.params.commands.some((c) => ['search', 'help', 'profile'].includes(c.command)));
 
@@ -727,6 +747,8 @@ test("arvoh: navbatda qolgan, lekin qidirmayotgan foydalanuvchi bilan ulanmaydi;
 });
 
 test('/queue: nega ulanmayotganini ko\'rsatadi (VIP filtri)', async () => {
+  config.vipFilters = true;
+  try {
   config.adminIds.push(777);
   try {
     await register(777, 'f', 44); makePremium(777);
@@ -749,5 +771,29 @@ test('/queue: nega ulanmayotganini ko\'rsatadi (VIP filtri)', async () => {
     assert.equal(user(777).partner_id, 2);         // endi ulanadi
   } finally {
     config.adminIds.pop();
+  }
+  } finally {
+    config.vipFilters = false;
+  }
+});
+
+test("vipFilters o'chiq: /filter ishlamaydi, saqlangan filtr e'tiborga olinmaydi, VIP matnida /filter yo'q", async () => {
+  await register(1, 'f', 44); makePremium(1);
+  raw().prepare("UPDATE users SET want_region = 'tsh', age_min = 18, age_max = 22 WHERE id = 1").run();
+  await send(1, '/filter');
+  assert.match(lastTo(1), /Bosh menyu/);
+  await send(1, '/vip');
+  assert.doesNotMatch(lastTo(1), /\/filter|\{filterLine\}/);
+  await register(2, 'm', 40);                     // filtrga mos emas, lekin filtr o'chiq
+  await send(2, '/next');
+  await send(1, '/next');
+  assert.equal(user(1).partner_id, 2);
+  config.vipFilters = true;
+  try {
+    await send(1, '/stop');
+    await send(1, '/vip');
+    assert.match(textsTo(1).at(-1), /\/filter/);
+  } finally {
+    config.vipFilters = false;
   }
 });
